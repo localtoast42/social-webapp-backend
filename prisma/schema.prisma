@@ -6,3 +6,43 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  text      String
+  isPublic  Boolean  @default(false)
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
+  likes     User[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  text      String?
+  isPublic  Boolean  @default(false)
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
+  likes     User[]
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  password  String
+  firstName String
+  lastName  String
+  city      String?
+  state     String?
+  country   String?
+  imageUrl  String?
+  isAdmin   Boolean   @default(false)
+  isGuest   Boolean   @default(true)
+  posts     Post[]
+  commentId Int?
+  Comment   Comment[]
+  Comment   Comment?  @relation(fields: [commentId], references: [id])
+}
