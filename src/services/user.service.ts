@@ -8,7 +8,6 @@ export async function createUser(input: Prisma.UserCreateInput) {
   try {
     return prisma.user.create({
       data: input,
-      omit: { hashedPassword: true },
     });
   } catch (e: any) {
     logger.error(e);
@@ -26,6 +25,9 @@ export async function validatePassword({
   const user = await prisma.user.findUnique({
     where: {
       username: username,
+    },
+    omit: {
+      hashedPassword: false,
     },
   });
 
