@@ -46,3 +46,12 @@ export async function deletePost(query: Prisma.PostDeleteArgs) {
     throw new Error(e);
   }
 }
+
+export async function deleteManyPosts(query: Prisma.PostDeleteManyArgs) {
+  try {
+    return prisma.post.deleteMany(query);
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
+}
