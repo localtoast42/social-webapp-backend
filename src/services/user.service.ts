@@ -1,19 +1,15 @@
-import {
-  Document,
-  FilterQuery,
-  ProjectionType,
-  QueryOptions,
-  Types,
-  UpdateQuery,
-} from "mongoose";
+import { Prisma } from "@prisma/client";
+import bcrypt from "bcrypt";
 import { omit } from "lodash";
-import UserModel, { User, UserCreate } from "../models/user.model";
+import prisma from "../utils/client";
 import logger from "../utils/logger";
 
-export async function createUser(input: UserCreate) {
+export async function createUser(input: Prisma.UserCreateInput) {
   try {
-    const user = await UserModel.create(input);
-    return omit(user.toJSON(), "password");
+    return prisma.user.create({
+      data: input,
+      omit: { hashedPassword: true },
+    });
   } catch (e: any) {
     logger.error(e);
     throw new Error(e);
@@ -27,71 +23,57 @@ export async function validatePassword({
   username: string;
   password: string;
 }) {
-  const user = await UserModel.findOne({ username });
+  const user = await prisma.user.findUnique({
+    where: {
+      username: username,
+    },
+  });
 
   if (!user) {
     return false;
   }
 
-  const isValid = await user.comparePassword(password);
+  const isValid = await bcrypt
+    .compare(password, user.hashedPassword)
+    .catch((e) => false);
 
   if (!isValid) return false;
 
-  return omit(user.toJSON(), "password");
+  return omit(user, "hashedPassword");
 }
 
-export async function findUser(
-  query: FilterQuery<User>,
-  projection?: ProjectionType<User>
-) {
+export async function findUser(args: Prisma.UserFindUniqueArgs) {
   try {
-    return UserModel.findOne(query, projection);
+    return prisma.user.findUnique(args);
   } catch (e: any) {
     logger.error(e);
     throw new Error(e);
   }
 }
 
-export async function findManyUsers(
-  query: FilterQuery<User>,
-  projection?: ProjectionType<User>,
-  options?: QueryOptions
-) {
-  const publicFields = {
-    username: 1,
-    firstName: 1,
-    lastName: 1,
-    city: 1,
-    state: 1,
-    country: 1,
-    imageUrl: 1,
-    fullName: 1,
-    url: 1,
-  };
-
-  return UserModel.find(query, projection, options).select(publicFields);
-}
-
-export async function findAndUpdateUser(
-  query: FilterQuery<User>,
-  update: UpdateQuery<User>,
-  options: QueryOptions
-) {
+export async function findManyUsers(args: Prisma.UserFindManyArgs) {
   try {
-    const result = await UserModel.findOneAndUpdate(query, update, options);
-    return result;
+    return prisma.user.findMany(args);
   } catch (e: any) {
     logger.error(e);
     throw new Error(e);
   }
 }
 
-export async function deleteUser(query: FilterQuery<User>) {
-  return UserModel.deleteOne(query);
+export async function findAndUpdateUser(args: Prisma.UserUpdateArgs) {
+  try {
+    return prisma.user.update(args);
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
 }
 
-export type FindUserResult = Document<unknown, {}, User> &
-  User &
-  Required<{
-    _id: Types.ObjectId;
-  }>;
+export async function deleteUser(args: Prisma.UserDeleteArgs) {
+  try {
+    return prisma.user.delete(args);
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
+}
