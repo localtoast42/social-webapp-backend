@@ -45,6 +45,7 @@ model User {
   following      Follows[] @relation("following")
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+  Session        Session[]
 }
 
 model Profile {
@@ -69,4 +70,14 @@ model Follows {
   createdAt    DateTime @default(now())
 
   @@id([followingId, followedById])
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  userAgent String
+  valid     Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
