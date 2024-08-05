@@ -1,26 +1,36 @@
-import { FilterQuery, QueryOptions, UpdateQuery } from "mongoose";
-import { get } from "lodash";
 import config from "config";
-import SessionModel, { Session, SessionInput } from "../models/session.model";
-import { signJwt, verifyJwt } from "../utils/jwt.utils";
+import { get } from "lodash";
+import { Prisma } from "@prisma/client";
+import prisma from "../utils/client";
 import { findUser } from "./user.service";
+import logger from "../utils/logger";
+import { signJwt, verifyJwt } from "../utils/jwt.utils";
 
-export async function createSession(input: SessionInput) {
-  const session = await SessionModel.create(input);
-
-  return session.toJSON();
+export async function createSession(input: Prisma.SessionCreateInput) {
+  try {
+    return prisma.session.create({ data: input });
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
 }
 
-export async function findSessions(query: FilterQuery<Session>) {
-  return SessionModel.find(query).lean();
+export async function findSessions(query: Prisma.SessionFindManyArgs) {
+  try {
+    return prisma.session.findMany(query);
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
 }
 
-export async function findAndUpdateSession(
-  query: FilterQuery<Session>,
-  update: UpdateQuery<Session>,
-  options: QueryOptions
-) {
-  return SessionModel.findOneAndUpdate(query, update, options);
+export async function findAndUpdateSession(query: Prisma.SessionUpdateArgs) {
+  try {
+    return prisma.session.update(query);
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
 }
 
 export async function reIssueAccessToken({
@@ -32,22 +42,24 @@ export async function reIssueAccessToken({
 
   if (!decoded || !get(decoded, "_id")) return "";
 
-  const session = await SessionModel.findById(get(decoded, "session"));
+  const session = await prisma.session.findUnique({
+    where: {
+      id: get(decoded, "session"),
+    },
+  });
 
   if (!session || !session.valid) return "";
 
-  const projection = {
-    password: -1,
-  };
+  const user = await findUser({
+    where: {
+      id: session.userId,
+    },
+  });
 
-  const result = await findUser({ _id: session.user.toString() }, projection);
-
-  if (!result) return "";
-
-  const user = result.toJSON();
+  if (!user) return "";
 
   const accessToken = signJwt(
-    { ...user, session: session._id },
+    { ...user, session: session.id },
     "accessTokenSecret",
     { expiresIn: config.get<string>("accessTokenTtl") }
   );
