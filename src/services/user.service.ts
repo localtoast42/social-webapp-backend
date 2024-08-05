@@ -44,36 +44,36 @@ export async function validatePassword({
   return omit(user, "hashedPassword");
 }
 
-export async function findUser(args: Prisma.UserFindUniqueArgs) {
+export async function findUser(query: Prisma.UserFindUniqueArgs) {
   try {
-    return prisma.user.findUnique(args);
+    return prisma.user.findUnique(query);
   } catch (e: any) {
     logger.error(e);
     throw new Error(e);
   }
 }
 
-export async function findManyUsers(args: Prisma.UserFindManyArgs) {
+export async function findManyUsers(query: Prisma.UserFindManyArgs) {
   try {
-    return prisma.user.findMany(args);
+    return prisma.user.findMany(query);
   } catch (e: any) {
     logger.error(e);
     throw new Error(e);
   }
 }
 
-export async function findAndUpdateUser(args: Prisma.UserUpdateArgs) {
+export async function findAndUpdateUser(query: Prisma.UserUpdateArgs) {
   try {
-    return prisma.user.update(args);
+    return prisma.user.update(query);
   } catch (e: any) {
     logger.error(e);
     throw new Error(e);
   }
 }
 
-export async function deleteUser(args: Prisma.UserDeleteArgs) {
+export async function deleteUser(query: Prisma.UserDeleteArgs) {
   try {
-    return prisma.user.delete(args);
+    return prisma.user.delete(query);
   } catch (e: any) {
     logger.error(e);
     throw new Error(e);
