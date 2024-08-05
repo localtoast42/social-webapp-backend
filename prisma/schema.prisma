@@ -8,41 +8,64 @@ datasource db {
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String   @id @default(cuid())
   text      String
   isPublic  Boolean  @default(false)
   author    User     @relation(fields: [authorId], references: [id])
-  authorId  Int
-  likes     User[]
-}
-
-model Comment {
-  id        Int      @id @default(autoincrement())
+  authorId  String
+  likes     Like[]
+  parent    Post?    @relation("PostGenealogy", fields: [parentId], references: [id])
+  parentId  String?
+  children  Post[]   @relation("PostGenealogy")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  text      String?
-  isPublic  Boolean  @default(false)
-  author    User     @relation(fields: [authorId], references: [id])
-  authorId  Int
-  likes     User[]
+}
+
+model Like {
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  createdAt DateTime @default(now())
+
+  @@id([postId, userId])
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  username  String    @unique
-  password  String
+  id         String    @id @default(cuid())
+  username   String    @unique
+  password   String
+  isAdmin    Boolean   @default(false)
+  isGuest    Boolean   @default(true)
+  profile    Profile?
+  posts      Post[]
+  likes      Like[]
+  followedBy Follows[] @relation("followedBy")
+  following  Follows[] @relation("following")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Profile {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
   firstName String
   lastName  String
   city      String?
   state     String?
   country   String?
   imageUrl  String?
-  isAdmin   Boolean   @default(false)
-  isGuest   Boolean   @default(true)
-  posts     Post[]
-  commentId Int?
-  Comment   Comment[]
-  Comment   Comment?  @relation(fields: [commentId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Follows {
+  followedBy   User     @relation("followedBy", fields: [followedById], references: [id])
+  followedById String
+  following    User     @relation("following", fields: [followingId], references: [id])
+  followingId  String
+  createdAt    DateTime @default(now())
+
+  @@id([followingId, followedById])
 }
