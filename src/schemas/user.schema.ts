@@ -1,4 +1,3 @@
-import { isValidObjectId } from "mongoose";
 import { boolean, number, object, string, enum as enum_, TypeOf } from "zod";
 
 const params = {
@@ -6,9 +5,6 @@ const params = {
     userId: string({
       required_error: "userId is required",
     }),
-  }).refine((data) => isValidObjectId(data.userId), {
-    message: "Invalid userId",
-    path: ["userId"],
   }),
 };
 
