@@ -1,13 +1,25 @@
+import config from "config";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { omit } from "lodash";
 import prisma from "../utils/client";
 import logger from "../utils/logger";
+import { CreateUserInput } from "../schemas/user.schema";
 
-export async function createUser(input: Prisma.UserCreateInput) {
+export async function createUser(input: CreateUserInput) {
   try {
+    const hashedPassword = bcrypt.hashSync(
+      input.password,
+      config.get<number>("saltWorkFactor")
+    );
+
+    const user = {
+      ...omit(input, "password"),
+      hashedPassword,
+    };
+
     return prisma.user.create({
-      data: input,
+      data: user,
     });
   } catch (e: any) {
     logger.error(e);
