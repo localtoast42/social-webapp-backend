@@ -58,7 +58,7 @@ model Session {
   user      User     @relation(fields: [userId], references: [id])
   userId    String
   userAgent String
-  valid     Boolean
+  valid     Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
