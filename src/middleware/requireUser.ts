@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { findUser } from "../services/user.service";
+import { findUserWithAllFollows } from "../services/user.service";
 
 const requireUser = async (req: Request, res: Response, next: NextFunction) => {
   const user = res.locals.user;
@@ -8,13 +8,13 @@ const requireUser = async (req: Request, res: Response, next: NextFunction) => {
     return res.sendStatus(401);
   }
 
-  res.locals.user = await findUser({
-    where: { id: user.id },
-  });
+  const result = await findUserWithAllFollows({ id: user.id });
 
-  if (!res.locals.user) {
+  if (!result) {
     return res.sendStatus(404);
   }
+
+  res.locals.user = result;
 
   return next();
 };
