@@ -65,6 +65,77 @@ export async function findUser(query: Prisma.UserFindUniqueArgs) {
   }
 }
 
+export async function findUserWithFollowing(
+  where: Prisma.UserFindUniqueArgs["where"],
+  omit?: Prisma.UserFindUniqueArgs["omit"]
+) {
+  try {
+    return prisma.user.findUnique({
+      where: where,
+      omit: omit,
+      include: {
+        following: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
+}
+
+export async function findUserWithFollowedBy(
+  where: Prisma.UserFindUniqueArgs["where"],
+  omit?: Prisma.UserFindUniqueArgs["omit"]
+) {
+  try {
+    return prisma.user.findUnique({
+      where: where,
+      omit: omit,
+      include: {
+        followedBy: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
+}
+
+export async function findUserWithAllFollows(
+  where: Prisma.UserFindUniqueArgs["where"],
+  omit?: Prisma.UserFindUniqueArgs["omit"]
+) {
+  try {
+    return prisma.user.findUnique({
+      where: where,
+      omit: omit,
+      include: {
+        following: {
+          select: {
+            id: true,
+          },
+        },
+        followedBy: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
+}
+
 export async function findManyUsers(query: Prisma.UserFindManyArgs) {
   try {
     return prisma.user.findMany(query);
@@ -91,3 +162,8 @@ export async function deleteUser(query: Prisma.UserDeleteArgs) {
     throw new Error(e);
   }
 }
+
+type ThenArg<T> = T extends PromiseLike<infer U> ? U : T;
+export type UserWithAllFollows = ThenArg<
+  ReturnType<typeof findUserWithAllFollows>
+>;
