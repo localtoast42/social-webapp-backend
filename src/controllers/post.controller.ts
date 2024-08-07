@@ -19,7 +19,7 @@ import {
 import { UserWithAllFollows } from "../services/user.service";
 
 export async function createPostHandler(
-  req: Request<{}, {}, CreatePostInput["body"]>,
+  req: Request<CreatePostInput["params"], {}, CreatePostInput["body"]>,
   res: Response<{}, { user: UserWithAllFollows }>
 ) {
   const user = res.locals.user;
@@ -30,11 +30,17 @@ export async function createPostHandler(
 
   const body = req.body;
 
-  const post = await createPost({
+  const input: Prisma.PostCreateInput = {
     ...body,
     isPublic: !user.isGuest,
     author: { connect: { id: user.id } },
-  });
+  };
+
+  if (req.params.postId) {
+    input.parent = { connect: { id: req.params.postId } };
+  }
+
+  const post = await createPost(input);
 
   return res.status(201).json(post);
 }

@@ -22,6 +22,7 @@ const like = object({
 });
 
 export const createPostSchema = object({
+  params: object({ postId: string().optional() }),
   ...payload,
 });
 
