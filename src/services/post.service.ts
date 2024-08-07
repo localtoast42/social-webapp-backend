@@ -29,6 +29,49 @@ export async function findManyPosts(query: Prisma.PostFindManyArgs) {
   }
 }
 
+export async function findFollowedPosts(
+  userId: string,
+  take?: number,
+  skip?: number
+) {
+  try {
+    const result = await prisma.post.findMany({
+      where: {
+        isPublic: true,
+        parentId: null,
+        author: {
+          followedBy: {
+            some: {
+              id: userId,
+            },
+          },
+        },
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            imageUrl: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: take,
+      skip: skip,
+    });
+
+    return result;
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
+}
+
 export async function findAndUpdatePost(query: Prisma.PostUpdateArgs) {
   try {
     return prisma.post.update(query);
