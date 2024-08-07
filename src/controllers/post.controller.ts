@@ -45,7 +45,12 @@ export async function getPostHandler(
 ) {
   const postId = req.params.postId;
 
-  const post = await findPost({ where: { id: postId } });
+  const post = await findPost({
+    where: {
+      id: postId,
+      isArchived: false,
+    },
+  });
 
   if (!post) {
     return res.sendStatus(404);
@@ -66,6 +71,7 @@ export async function getRecentPostsHandler(
 
   const query: Prisma.PostFindManyArgs = {
     where: {
+      isArchived: false,
       parentId: null,
       OR: [{ authorId: user.id }, { isPublic: true }],
     },
@@ -127,6 +133,7 @@ export async function getPostsByUserHandler(
 
   const query: Prisma.PostFindManyArgs = {
     where: {
+      isArchived: false,
       parentId: null,
       authorId: targetUserId,
       OR: [
@@ -157,7 +164,12 @@ export async function updatePostHandler(
     return res.sendStatus(403);
   }
 
-  const post = await findPost({ where: { id: postId } });
+  const post = await findPost({
+    where: {
+      id: postId,
+      isArchived: false,
+    },
+  });
 
   if (!post) {
     return res.sendStatus(404);
@@ -187,7 +199,12 @@ export async function likePostHandler(
     return res.sendStatus(403);
   }
 
-  const post = await findPost({ where: { id: postId } });
+  const post = await findPost({
+    where: {
+      id: postId,
+      isArchived: false,
+    },
+  });
 
   if (!post) {
     return res.sendStatus(404);
@@ -216,7 +233,12 @@ export async function deletePostHandler(
     return res.sendStatus(403);
   }
 
-  const post = await findPost({ where: { id: postId } });
+  const post = await findPost({
+    where: {
+      id: postId,
+      isArchived: false,
+    },
+  });
 
   if (!post) {
     return res.sendStatus(404);

@@ -37,6 +37,7 @@ export async function findFollowedPosts(
   try {
     const result = await prisma.post.findMany({
       where: {
+        isArchived: false,
         isPublic: true,
         parentId: null,
         author: {
