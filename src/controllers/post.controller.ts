@@ -12,9 +12,9 @@ import {
   createPost,
   findPost,
   findAndUpdatePost,
-  deletePost,
   findManyPosts,
   findFollowedPosts,
+  archivePost,
 } from "../services/post.service";
 import { UserWithAllFollows } from "../services/user.service";
 
@@ -226,7 +226,7 @@ export async function deletePostHandler(
     return res.sendStatus(403);
   }
 
-  const deletedPost = await deletePost({ where: { id: postId } });
+  const archivedPost = await archivePost(postId);
 
-  return res.json(deletedPost);
+  return res.json(archivedPost);
 }

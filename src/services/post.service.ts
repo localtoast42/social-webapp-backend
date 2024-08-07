@@ -81,9 +81,12 @@ export async function findAndUpdatePost(query: Prisma.PostUpdateArgs) {
   }
 }
 
-export async function deletePost(query: Prisma.PostDeleteArgs) {
+export async function archivePost(postId: string) {
   try {
-    return prisma.post.delete(query);
+    return prisma.post.update({
+      where: { id: postId },
+      data: { isArchived: true },
+    });
   } catch (e: any) {
     logger.error(e);
     throw new Error(e);
