@@ -229,7 +229,12 @@ export async function followUserHandler(
 
   const updatedUser = await findAndUpdateUser({
     where: { id: requestingUser.id },
-    data: { followedBy: update },
+    data: { following: update },
+    include: {
+      following: {
+        select: { id: true },
+      },
+    },
   });
 
   return res.json(updatedUser);
