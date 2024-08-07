@@ -1,5 +1,14 @@
 import { object, string, enum as enum_, TypeOf } from "zod";
 
+const params = object({
+  postId: string({
+    required_error: "postId is required",
+  }),
+  userId: string({
+    required_error: "userId is required",
+  }),
+});
+
 const payload = {
   body: object({
     text: string({
@@ -10,15 +19,6 @@ const payload = {
 
 const like = object({
   like: enum_(["true", "false"], { message: "Like must be true or false" }),
-});
-
-const params = object({
-  postId: string({
-    required_error: "postId is required",
-  }),
-  userId: string({
-    required_error: "userId is required",
-  }),
 });
 
 export const createPostSchema = object({
