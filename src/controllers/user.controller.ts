@@ -19,11 +19,7 @@ import {
   ReadUserRequest,
   UpdateUserRequest,
 } from "../schemas/user.schema";
-import {
-  createRandomPost,
-  createRandomUser,
-  createRandomUserAndPosts,
-} from "../utils/populateDatabase";
+import { createRandomUserAndPosts } from "../utils/populateDatabase";
 
 export async function createUserHandler(
   req: Request<{}, {}, CreateUserRequest["body"]>,
