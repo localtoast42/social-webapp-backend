@@ -191,13 +191,18 @@ export async function getUserFollowsHandler(
 ) {
   const userId = req.params.userId;
 
-  const userFollows = await findUserWithFollowing({ id: userId });
+  const user = await findUserWithFollowing({ id: userId });
 
-  if (userFollows === null) {
+  if (user === null) {
     return res.sendStatus(404);
   }
 
-  return res.json(userFollows);
+  const result = {
+    id: user.id,
+    data: user.following,
+  };
+
+  return res.json(result);
 }
 
 export async function followUserHandler(
