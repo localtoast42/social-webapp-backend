@@ -102,6 +102,7 @@ export async function getUserListHandler(
 
   const query: Prisma.UserFindManyArgs = {
     select: {
+      id: true,
       username: true,
       firstName: true,
       lastName: true,
