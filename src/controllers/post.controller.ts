@@ -248,6 +248,7 @@ export async function likePostHandler(
   const updatedPost = await findAndUpdatePost({
     where: { id: postId },
     data: { likes: update },
+    include: { likes: { select: { id: true } } },
   });
 
   return res.json(updatedPost);
