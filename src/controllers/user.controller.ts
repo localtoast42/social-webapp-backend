@@ -84,8 +84,18 @@ export async function getUserListHandler(
     const queryString = req.query.q as string;
     queryTerms.push({
       OR: [
-        { firstName: { contains: queryString } },
-        { lastName: { contains: queryString } },
+        {
+          firstName: {
+            contains: queryString,
+            mode: "insensitive",
+          },
+        },
+        {
+          lastName: {
+            contains: queryString,
+            mode: "insensitive",
+          },
+        },
       ],
     });
   }
