@@ -64,9 +64,15 @@ export async function getSelfHandler(req: Request, res: Response) {
   return res.json(user);
 }
 
-export async function getUserListHandler(req: Request, res: Response) {
-  const user: NonNullable<UserWithAllFollows> = res.locals.user;
-  const userId = user.id;
+export async function getUserListHandler(
+  req: Request,
+  res: Response<{}, { user: UserWithAllFollows }>
+) {
+  const user = res.locals.user;
+
+  if (!user) {
+    return res.sendStatus(403);
+  }
 
   const queryTerms: object[] = [];
 
@@ -91,7 +97,7 @@ export async function getUserListHandler(req: Request, res: Response) {
       imageUrl: true,
     },
     where: {
-      AND: [{ id: { not: userId } }, { isGuest: false }, ...queryTerms],
+      AND: [{ id: { not: user.id } }, { isGuest: false }, ...queryTerms],
     },
     orderBy: { lastName: "asc" },
   };
@@ -103,11 +109,14 @@ export async function getUserListHandler(req: Request, res: Response) {
 
 export async function updateUserHandler(
   req: Request<UpdateUserRequest["params"], {}, UpdateUserRequest["body"]>,
-  res: Response
+  res: Response<{}, { user: UserWithAllFollows }>
 ) {
-  const requestingUser: NonNullable<UserWithAllFollows> = res.locals.user;
-  const requestingUserId = requestingUser.id;
+  const requestingUser = res.locals.user;
   const userId = req.params.userId;
+
+  if (!requestingUser) {
+    return res.sendStatus(403);
+  }
 
   const user = await findUser({ where: { id: userId } });
 
@@ -115,7 +124,7 @@ export async function updateUserHandler(
     return res.sendStatus(404);
   }
 
-  if (user.id !== requestingUserId) {
+  if (user.id !== requestingUser.id) {
     return res.sendStatus(403);
   }
 
@@ -133,11 +142,14 @@ export async function updateUserHandler(
 
 export async function deleteUserHandler(
   req: Request<DeleteUserRequest["params"]>,
-  res: Response
+  res: Response<{}, { user: UserWithAllFollows }>
 ) {
-  const requestingUser: NonNullable<UserWithAllFollows> = res.locals.user;
-  const requestingUserId = requestingUser.id;
+  const requestingUser = res.locals.user;
   const userId = req.params.userId;
+
+  if (!requestingUser) {
+    return res.sendStatus(403);
+  }
 
   const user = await findUser({ where: { id: userId } });
 
@@ -145,7 +157,7 @@ export async function deleteUserHandler(
     return res.sendStatus(404);
   }
 
-  if (user.id !== requestingUserId) {
+  if (user.id !== requestingUser.id) {
     return res.sendStatus(403);
   }
 
@@ -175,12 +187,15 @@ export async function getUserFollowsHandler(
 
 export async function followUserHandler(
   req: Request<FollowUserRequest["params"], {}, FollowUserRequest["body"]>,
-  res: Response
+  res: Response<{}, { user: UserWithAllFollows }>
 ) {
-  const requestingUser: NonNullable<UserWithAllFollows> = res.locals.user;
-  const requestingUserId = requestingUser.id;
+  const requestingUser = res.locals.user;
   const targetUserId = req.params.userId;
   const follow: boolean = JSON.parse(req.body.follow);
+
+  if (!requestingUser) {
+    return res.sendStatus(403);
+  }
 
   const targetUser = await findUser({ where: { id: targetUserId } });
 
@@ -193,7 +208,7 @@ export async function followUserHandler(
     : { disconnect: { id: targetUserId } };
 
   const updatedUser = await findAndUpdateUser({
-    where: { id: requestingUserId },
+    where: { id: requestingUser.id },
     data: { followedBy: update },
   });
 
