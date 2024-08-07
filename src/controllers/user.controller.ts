@@ -19,7 +19,11 @@ import {
   ReadUserRequest,
   UpdateUserRequest,
 } from "../schemas/user.schema";
-import { createRandomPost, createRandomUser } from "../utils/populateDatabase";
+import {
+  createRandomPost,
+  createRandomUser,
+  createRandomUserAndPosts,
+} from "../utils/populateDatabase";
 
 export async function createUserHandler(
   req: Request<{}, {}, CreateUserRequest["body"]>,
@@ -222,13 +226,12 @@ export async function populateUsers(
   const userCount = req.body.userCount;
   const postCount = req.body.postCount;
 
-  for (let i = 0; i < userCount; i++) {
-    let user = await createRandomUser();
+  const users = [];
 
-    for (let j = 0; j < postCount; j++) {
-      createRandomPost(user.id);
-    }
+  for (let i = 0; i < userCount; i++) {
+    let user = await createRandomUserAndPosts(postCount);
+    users.push(user);
   }
 
-  res.sendStatus(201);
+  res.status(201).json({ data: users });
 }
