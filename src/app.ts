@@ -1,3 +1,4 @@
+import "dotenv/config";
 import config from "config";
 import createServer from "./utils/server";
 import logger from "./utils/logger";
