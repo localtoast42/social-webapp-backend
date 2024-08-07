@@ -14,22 +14,12 @@ model Post {
   isPublic  Boolean  @default(false)
   author    User     @relation(fields: [authorId], references: [id])
   authorId  String
-  likes     Like[]
+  likes     User[]   @relation("Likes")
   parent    Post?    @relation("PostGenealogy", fields: [parentId], references: [id])
   parentId  String?
   children  Post[]   @relation("PostGenealogy")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-model Like {
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  post      Post     @relation(fields: [postId], references: [id])
-  postId    String
-  createdAt DateTime @default(now())
-
-  @@id([postId, userId])
 }
 
 model User {
@@ -45,7 +35,7 @@ model User {
   country        String?
   imageUrl       String?
   posts          Post[]
-  likes          Like[]
+  likes          Post[]    @relation("Likes")
   followedBy     User[]    @relation("UserFollows")
   following      User[]    @relation("UserFollows")
   createdAt      DateTime  @default(now())
