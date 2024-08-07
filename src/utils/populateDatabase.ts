@@ -22,6 +22,7 @@ export function createRandomUserInput() {
     state: faker.location.state(),
     country: "United States",
     imageUrl: faker.image.avatarGitHub(),
+    isGuest: false,
   };
 
   return input;
