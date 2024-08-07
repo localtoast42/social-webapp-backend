@@ -48,9 +48,9 @@ export const deletePostSchema = object({
   params: params.pick({ postId: true }),
 });
 
-export type CreatePostInput = TypeOf<typeof createPostSchema>;
-export type ReadPostInput = TypeOf<typeof getPostSchema>;
-export type ReadPostByUserInput = TypeOf<typeof getPostByUserSchema>;
-export type UpdatePostInput = TypeOf<typeof updatePostSchema>;
-export type LikePostInput = TypeOf<typeof likePostSchema>;
-export type DeletePostInput = TypeOf<typeof deletePostSchema>;
+export type CreatePostRequest = TypeOf<typeof createPostSchema>;
+export type ReadPostRequest = TypeOf<typeof getPostSchema>;
+export type ReadPostByUserRequest = TypeOf<typeof getPostByUserSchema>;
+export type UpdatePostRequest = TypeOf<typeof updatePostSchema>;
+export type LikePostRequest = TypeOf<typeof likePostSchema>;
+export type DeletePostRequest = TypeOf<typeof deletePostSchema>;

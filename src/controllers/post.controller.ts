@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import {
-  CreatePostInput,
-  ReadPostInput,
-  UpdatePostInput,
-  DeletePostInput,
-  ReadPostByUserInput,
-  LikePostInput,
+  CreatePostRequest,
+  ReadPostRequest,
+  UpdatePostRequest,
+  DeletePostRequest,
+  ReadPostByUserRequest,
+  LikePostRequest,
 } from "../schemas/post.schema";
 import {
   createPost,
@@ -19,7 +19,7 @@ import {
 import { UserWithAllFollows } from "../services/user.service";
 
 export async function createPostHandler(
-  req: Request<CreatePostInput["params"], {}, CreatePostInput["body"]>,
+  req: Request<CreatePostRequest["params"], {}, CreatePostRequest["body"]>,
   res: Response<{}, { user: UserWithAllFollows }>
 ) {
   const user = res.locals.user;
@@ -46,7 +46,7 @@ export async function createPostHandler(
 }
 
 export async function getPostHandler(
-  req: Request<ReadPostInput["params"]>,
+  req: Request<ReadPostRequest["params"]>,
   res: Response
 ) {
   const postId = req.params.postId;
@@ -66,7 +66,7 @@ export async function getPostHandler(
 }
 
 export async function getChildPostsHandler(
-  req: Request<ReadPostInput["params"]>,
+  req: Request<ReadPostRequest["params"]>,
   res: Response<{}, { user: UserWithAllFollows }>
 ) {
   const user = res.locals.user;
@@ -152,7 +152,7 @@ export async function getFollowedPostsHandler(
 }
 
 export async function getPostsByUserHandler(
-  req: Request<ReadPostByUserInput["params"]>,
+  req: Request<ReadPostByUserRequest["params"]>,
   res: Response<{}, { user: UserWithAllFollows }>
 ) {
   const requestingUser = res.locals.user;
@@ -185,7 +185,7 @@ export async function getPostsByUserHandler(
 }
 
 export async function updatePostHandler(
-  req: Request<UpdatePostInput["params"], {}, UpdatePostInput["body"]>,
+  req: Request<UpdatePostRequest["params"], {}, UpdatePostRequest["body"]>,
   res: Response<{}, { user: UserWithAllFollows }>
 ) {
   const user = res.locals.user;
@@ -219,7 +219,7 @@ export async function updatePostHandler(
 }
 
 export async function likePostHandler(
-  req: Request<LikePostInput["params"], {}, LikePostInput["body"]>,
+  req: Request<LikePostRequest["params"], {}, LikePostRequest["body"]>,
   res: Response<{}, { user: UserWithAllFollows }>
 ) {
   const user = res.locals.user;
@@ -254,7 +254,7 @@ export async function likePostHandler(
 }
 
 export async function deletePostHandler(
-  req: Request<DeletePostInput["params"]>,
+  req: Request<DeletePostRequest["params"]>,
   res: Response<{}, { user: UserWithAllFollows }>
 ) {
   const user = res.locals.user;
