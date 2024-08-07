@@ -65,6 +65,31 @@ export async function getPostHandler(
   return res.json(post);
 }
 
+export async function getChildPostsHandler(
+  req: Request<ReadPostInput["params"]>,
+  res: Response<{}, { user: UserWithAllFollows }>
+) {
+  const user = res.locals.user;
+  const postId = req.params.postId;
+
+  if (!user) {
+    return res.sendStatus(403);
+  }
+
+  const query: Prisma.PostFindManyArgs = {
+    where: {
+      isArchived: false,
+      parentId: postId,
+      OR: [{ authorId: user.id }, { isPublic: true }],
+    },
+    orderBy: { createdAt: "asc" },
+  };
+
+  const posts = await findManyPosts(query);
+
+  return res.json({ data: posts });
+}
+
 export async function getRecentPostsHandler(
   req: Request,
   res: Response<{}, { user: UserWithAllFollows }>
