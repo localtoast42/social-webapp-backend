@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import config from "config";
+import { omit } from "lodash";
 import { Prisma } from "@prisma/client";
 import logger from "../utils/logger";
 import {
@@ -25,10 +26,13 @@ export async function createUserHandler(
   req: Request<{}, {}, CreateUserRequest["body"]>,
   res: Response
 ) {
-  req.body.isGuest = !config.get<boolean>("allowNewPublicUsers");
+  const userInput = {
+    ...omit(req.body, "passwordConfirmation"),
+    isGuest: !config.get<boolean>("allowNewPublicUsers"),
+  };
 
   try {
-    const user = await createUser(req.body);
+    const user = await createUser(userInput);
     logger.info(`User ${user.username} created`);
     return res.send(user);
   } catch (e: any) {
