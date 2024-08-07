@@ -40,7 +40,7 @@ export async function reIssueAccessToken({
 }) {
   const { decoded } = verifyJwt(refreshToken, "refreshTokenSecret");
 
-  if (!decoded || !get(decoded, "_id")) return "";
+  if (!decoded || !get(decoded, "id")) return "";
 
   const session = await prisma.session.findUnique({
     where: {
