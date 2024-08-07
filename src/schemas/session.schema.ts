@@ -11,4 +11,4 @@ export const createSessionSchema = object({
   }),
 });
 
-export type CreateSessionInput = TypeOf<typeof createSessionSchema>;
+export type CreateSessionRequest = TypeOf<typeof createSessionSchema>;

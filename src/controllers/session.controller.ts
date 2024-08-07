@@ -7,10 +7,10 @@ import {
   findAndUpdateSession,
   findSessions,
 } from "../services/session.service";
-import { CreateSessionInput } from "../schemas/session.schema";
+import { CreateSessionRequest } from "../schemas/session.schema";
 
 export async function createUserSessionHandler(
-  req: Request<{}, {}, CreateSessionInput["body"]>,
+  req: Request<{}, {}, CreateSessionRequest["body"]>,
   res: Response
 ) {
   const user = await validatePassword(req.body);
