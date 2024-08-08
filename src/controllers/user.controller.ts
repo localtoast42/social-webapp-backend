@@ -65,7 +65,13 @@ export async function getUserHandler(
 export async function getSelfHandler(req: Request, res: Response) {
   const user: UserWithAllFollows = res.locals.user;
 
-  return res.json(user);
+  const userData = {
+    ...user,
+    following: user?.following.map((obj) => obj.id),
+    followedBy: user?.followedBy.map((obj) => obj.id),
+  };
+
+  return res.json(userData);
 }
 
 export async function getUserListHandler(
