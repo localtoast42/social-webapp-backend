@@ -14,7 +14,7 @@ import {
   findAndUpdatePost,
   findManyPosts,
   findFollowedPosts,
-  archivePost,
+  deletePost,
 } from "../services/post.service";
 import { UserWithAllFollows } from "../services/user.service";
 
@@ -266,10 +266,7 @@ export async function deletePostHandler(
   }
 
   const post = await findPost({
-    where: {
-      id: postId,
-      isArchived: false,
-    },
+    where: { id: postId },
   });
 
   if (!post) {
@@ -280,7 +277,7 @@ export async function deletePostHandler(
     return res.sendStatus(403);
   }
 
-  const archivedPost = await archivePost(postId);
+  const archivedPost = await deletePost(postId);
 
   return res.json(archivedPost);
 }
