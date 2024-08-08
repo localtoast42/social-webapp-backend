@@ -183,21 +183,17 @@ export async function findAndUpdateUser(query: Prisma.UserUpdateArgs) {
   }
 }
 
-export async function archiveUser(userId: string) {
+export async function deleteUser(userId: string) {
   try {
-    return prisma.user.update({
-      where: { id: userId },
-      data: {
-        isArchived: true,
-        posts: {
-          updateMany: {
-            where: { isArchived: false },
-            data: { isArchived: true },
-          },
-        },
-      },
-      include: { posts: true },
+    const deletePosts = prisma.post.deleteMany({
+      where: { authorId: userId },
     });
+
+    const deleteUser = prisma.user.delete({
+      where: { id: userId },
+    });
+
+    return prisma.$transaction([deletePosts, deleteUser]);
   } catch (e: any) {
     logger.error(e);
     throw new Error(e);
