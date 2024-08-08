@@ -176,10 +176,14 @@ export async function deleteUserHandler(
     return res.sendStatus(403);
   }
 
-  const result = await deleteUser(user.id);
+  const [deletedSessions, deletedPosts, deletedUser] = await deleteUser(
+    user.id
+  );
 
   return res.json({
-    ...result,
+    deletedSessionCount: deletedSessions.count,
+    deletedPostsCount: deletedPosts.count,
+    deletedUser: deletedUser,
     accessToken: null,
     refreshToken: null,
   });

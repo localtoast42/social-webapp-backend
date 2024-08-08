@@ -185,6 +185,10 @@ export async function findAndUpdateUser(query: Prisma.UserUpdateArgs) {
 
 export async function deleteUser(userId: string) {
   try {
+    const deleteSessions = prisma.session.deleteMany({
+      where: { userId: userId },
+    });
+
     const deletePosts = prisma.post.deleteMany({
       where: { authorId: userId },
     });
@@ -193,7 +197,7 @@ export async function deleteUser(userId: string) {
       where: { id: userId },
     });
 
-    return prisma.$transaction([deletePosts, deleteUser]);
+    return prisma.$transaction([deleteSessions, deletePosts, deleteUser]);
   } catch (e: any) {
     logger.error(e);
     throw new Error(e);
