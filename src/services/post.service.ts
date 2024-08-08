@@ -20,6 +20,28 @@ export async function findPost(query: Prisma.PostFindUniqueArgs) {
   }
 }
 
+export async function findPostWithLikes(
+  where: Prisma.PostFindUniqueArgs["where"],
+  omit?: Prisma.PostFindUniqueArgs["omit"]
+) {
+  try {
+    return prisma.post.findUnique({
+      where: where,
+      omit: omit,
+      include: {
+        likes: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
+}
+
 export async function findManyPosts(query: Prisma.PostFindManyArgs) {
   try {
     return prisma.post.findMany(query);
