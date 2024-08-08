@@ -29,7 +29,6 @@ model User {
   id             String    @id @default(cuid())
   username       String    @unique
   hashedPassword String    @map("hashed_password")
-  isArchived     Boolean   @default(false) @map("is_archived")
   isAdmin        Boolean   @default(false) @map("is_admin")
   isGuest        Boolean   @default(true) @map("is_guest")
   firstName      String    @map("first_name")
