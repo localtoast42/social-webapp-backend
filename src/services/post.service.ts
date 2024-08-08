@@ -51,6 +51,43 @@ export async function findManyPosts(query: Prisma.PostFindManyArgs) {
   }
 }
 
+export async function findManyPostsWithAuthorAndLikes(
+  query: Prisma.PostFindManyArgs
+) {
+  try {
+    return prisma.post.findMany({
+      ...query,
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            fullName: true,
+            imageUrl: true,
+            url: true,
+          },
+        },
+        likes: {
+          select: {
+            id: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            children: true,
+          },
+        },
+      },
+    });
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
+}
+
 export async function findFollowedPosts(
   userId: string,
   take?: number,

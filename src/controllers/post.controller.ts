@@ -13,10 +13,10 @@ import {
   findPost,
   findAndUpdatePost,
   findManyPosts,
-  findFollowedPosts,
   deletePost,
   findPostWithLikes,
   updatePostWithLikes,
+  findManyPostsWithAuthorAndLikes,
 } from "../services/post.service";
 import { UserWithAllFollows } from "../services/user.service";
 
@@ -107,23 +107,24 @@ export async function getRecentPostsHandler(
       OR: [{ authorId: user.id }, { isPublic: true }],
     },
     orderBy: { createdAt: "desc" },
+    take: req.query.limit ? parseInt(req.query.limit as string) : undefined,
+    skip: req.query.skip ? parseInt(req.query.skip as string) : undefined,
   };
 
-  if (req.query.limit) {
-    query.take = parseInt(req.query.limit as string);
-  }
-
-  if (req.query.skip) {
-    query.skip = parseInt(req.query.skip as string);
-  }
-
-  const posts = await findManyPosts(query);
+  const posts = await findManyPostsWithAuthorAndLikes(query);
 
   if (!posts) {
     return res.sendStatus(404);
   }
 
-  return res.json({ data: posts });
+  const postsData = posts.map((post) => {
+    return {
+      ...post,
+      likes: post.likes.map((obj) => obj.id),
+    };
+  });
+
+  return res.json({ data: postsData });
 }
 
 export async function getFollowedPostsHandler(
@@ -136,19 +137,39 @@ export async function getFollowedPostsHandler(
     return res.sendStatus(403);
   }
 
-  const take = req.query.limit
-    ? parseInt(req.query.limit as string)
-    : undefined;
+  const query: Prisma.PostFindManyArgs = {
+    where: {
+      isPublic: true,
+      parentId: null,
+      author: {
+        followedBy: {
+          some: {
+            id: user.id,
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: req.query.limit ? parseInt(req.query.limit as string) : undefined,
+    skip: req.query.skip ? parseInt(req.query.skip as string) : undefined,
+  };
 
-  const skip = req.query.skip ? parseInt(req.query.skip as string) : undefined;
-
-  const posts = await findFollowedPosts(user.id, take, skip);
+  const posts = await findManyPostsWithAuthorAndLikes(query);
 
   if (!posts) {
     return res.sendStatus(404);
   }
 
-  return res.json({ data: posts });
+  const postsData = posts.map((post) => {
+    return {
+      ...post,
+      likes: post.likes.map((obj) => obj.id),
+    };
+  });
+
+  return res.json({ data: postsData });
 }
 
 export async function getPostsByUserHandler(
