@@ -43,10 +43,9 @@ export async function createUserHandler(
 
 export async function getUserHandler(
   req: Request<ReadUserRequest["params"]>,
-  res: Response
+  res: Response<{}, { user: UserWithAllFollows }>
 ) {
-  // const requestingUser = res.locals.user;
-  // const requestingUserId = requestingUser.id;
+  const requestingUser = res.locals.user;
   const userId = req.params.userId;
 
   const user = await findUser({
@@ -57,9 +56,12 @@ export async function getUserHandler(
     return res.sendStatus(404);
   }
 
-  // user.followedByMe = user.followedBy.includes(requestingUserId);
+  const userData = {
+    ...user,
+    followedByMe: requestingUser?.following.some((obj) => obj.id === user.id),
+  };
 
-  return res.json(user);
+  return res.json(userData);
 }
 
 export async function getSelfHandler(req: Request, res: Response) {
