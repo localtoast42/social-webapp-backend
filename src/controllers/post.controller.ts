@@ -15,6 +15,8 @@ import {
   findManyPosts,
   findFollowedPosts,
   deletePost,
+  findPostWithLikes,
+  updatePostWithLikes,
 } from "../services/post.service";
 import { UserWithAllFollows } from "../services/user.service";
 
@@ -51,15 +53,18 @@ export async function getPostHandler(
 ) {
   const postId = req.params.postId;
 
-  const post = await findPost({
-    where: { id: postId },
-  });
+  const post = await findPostWithLikes({ id: postId });
 
   if (!post) {
     return res.sendStatus(404);
   }
 
-  return res.json(post);
+  const postData = {
+    ...post,
+    likes: post.likes.map((obj) => obj.id),
+  };
+
+  return res.json(postData);
 }
 
 export async function getChildPostsHandler(
@@ -233,13 +238,17 @@ export async function likePostHandler(
     ? { connect: { id: user.id } }
     : { disconnect: { id: user.id } };
 
-  const updatedPost = await findAndUpdatePost({
-    where: { id: postId },
-    data: { likes: update },
-    include: { likes: { select: { id: true } } },
-  });
+  const updatedPost = await updatePostWithLikes(
+    { id: postId },
+    { likes: update }
+  );
 
-  return res.json(updatedPost);
+  const updatedPostData = {
+    ...updatedPost,
+    likes: updatedPost.likes.map((obj) => obj.id),
+  };
+
+  return res.json(updatedPostData);
 }
 
 export async function deletePostHandler(

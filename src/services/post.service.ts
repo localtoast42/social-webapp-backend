@@ -103,6 +103,30 @@ export async function findAndUpdatePost(query: Prisma.PostUpdateArgs) {
   }
 }
 
+export async function updatePostWithLikes(
+  where: Prisma.PostUpdateArgs["where"],
+  data: Prisma.PostUpdateArgs["data"],
+  omit?: Prisma.PostUpdateArgs["omit"]
+) {
+  try {
+    return prisma.post.update({
+      where: where,
+      omit: omit,
+      data: data,
+      include: {
+        likes: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
+}
+
 export async function deletePost(postId: string) {
   try {
     return prisma.post.delete({
