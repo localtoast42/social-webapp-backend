@@ -9,18 +9,17 @@ datasource db {
 }
 
 model Post {
-  id         String   @id @default(cuid())
-  text       String
-  isPublic   Boolean  @default(false) @map("is_public")
-  isArchived Boolean  @default(false) @map("is_archived")
-  author     User     @relation(fields: [authorId], references: [id])
-  authorId   String   @map("author_id")
-  likes      User[]   @relation("likes")
-  parent     Post?    @relation("post_genealogy", fields: [parentId], references: [id])
-  parentId   String?  @map("parent_id")
-  children   Post[]   @relation("post_genealogy")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id        String   @id @default(cuid())
+  text      String
+  isPublic  Boolean  @default(false) @map("is_public")
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String   @map("author_id")
+  likes     User[]   @relation("likes")
+  parent    Post?    @relation("post_genealogy", fields: [parentId], references: [id])
+  parentId  String?  @map("parent_id")
+  children  Post[]   @relation("post_genealogy")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("posts")
 }
