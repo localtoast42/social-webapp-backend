@@ -183,9 +183,21 @@ export async function findAndUpdateUser(query: Prisma.UserUpdateArgs) {
   }
 }
 
-export async function deleteUser(query: Prisma.UserDeleteArgs) {
+export async function archiveUser(userId: string) {
   try {
-    return prisma.user.delete(query);
+    return prisma.user.update({
+      where: { id: userId },
+      data: {
+        isArchived: true,
+        posts: {
+          updateMany: {
+            where: { isArchived: false },
+            data: { isArchived: true },
+          },
+        },
+      },
+      include: { posts: true },
+    });
   } catch (e: any) {
     logger.error(e);
     throw new Error(e);

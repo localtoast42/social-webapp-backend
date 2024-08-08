@@ -8,9 +8,9 @@ import {
   findUser,
   findManyUsers,
   findAndUpdateUser,
-  deleteUser,
   findUserWithFollowing,
   UserWithAllFollows,
+  archiveUser,
 } from "../services/user.service";
 import {
   CreateUserRequest,
@@ -176,7 +176,7 @@ export async function deleteUserHandler(
     return res.sendStatus(403);
   }
 
-  const result = await deleteUser({ where: { id: userId } });
+  const result = await archiveUser(user.id);
 
   return res.json({
     ...result,
