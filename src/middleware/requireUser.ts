@@ -8,6 +8,10 @@ const requireUser = async (req: Request, res: Response, next: NextFunction) => {
     return res.sendStatus(401);
   }
 
+  if (user.isArchived) {
+    return res.sendStatus(403);
+  }
+
   const result = await findUserWithAllFollows({ id: user.id });
 
   if (!result) {
