@@ -24,8 +24,6 @@
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "luxon": "^3.4.4",
-    "mongoose": "^8.4.0",
-    "mongoose-lean-virtuals": "^0.9.1",
     "morgan": "^1.10.0",
     "pino": "^9.3.1",
     "pino-pretty": "^11.2.1",
