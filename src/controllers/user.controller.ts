@@ -36,8 +36,18 @@ export async function createUserHandler(
     logger.info(`User ${user.username} created`);
     return res.send(user);
   } catch (e: any) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      if (e.code === "P2002") {
+        const errorMessage = `Unique constraint failed on the fields: ${e.meta?.target}`;
+        logger.info("PrismaClientKnownRequestError: " + errorMessage);
+        return res.status(409).json({
+          message: errorMessage,
+          target: e.meta?.target,
+        });
+      }
+    }
     logger.error(e);
-    return res.status(409).json(e.message);
+    return res.status(500);
   }
 }
 

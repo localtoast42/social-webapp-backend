@@ -22,8 +22,7 @@ export async function createUser(input: CreateUserInput) {
       data: user,
     });
   } catch (e: any) {
-    logger.error(e);
-    throw new Error(e);
+    throw e;
   }
 }
 
