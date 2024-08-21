@@ -47,7 +47,7 @@ export async function createUserHandler(
       }
     }
     logger.error(e);
-    return res.status(500);
+    return res.sendStatus(500);
   }
 }
 
