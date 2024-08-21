@@ -72,8 +72,8 @@ export async function createRandomUserAndPosts(postCount: number) {
   }
 
   try {
-    const post = await createUserAndPosts(userInput, posts);
-    return post;
+    const newUser = await createUserAndPosts(userInput, posts);
+    return newUser;
   } catch (e: any) {
     throw new Error(e);
   }
