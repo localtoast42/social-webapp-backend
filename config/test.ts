@@ -8,4 +8,6 @@ export default {
   refreshTokenTtl: "1d",
   accessTokenSecret: "accessTest",
   refreshTokenSecret: "refreshTest",
+  firstAdminUsername: "admin",
+  firstAdminPassword: "admin",
 };

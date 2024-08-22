@@ -9,4 +9,6 @@ export default {
   refreshTokenTtl: "1d",
   accessTokenSecret: "",
   refreshTokenSecret: "",
+  firstAdminUsername: "",
+  firstAdminPassword: "",
 };
