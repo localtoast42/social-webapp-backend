@@ -14,9 +14,9 @@ import {
   findAndUpdatePost,
   findManyPosts,
   deletePost,
-  findPostWithLikes,
   updatePostWithLikes,
   findManyPostsWithAuthorAndLikes,
+  findPostWithAuthorAndLikes,
 } from "../services/post.service";
 import { UserWithAllFollows } from "../services/user.service";
 
@@ -53,7 +53,7 @@ export async function getPostHandler(
 ) {
   const postId = req.params.postId;
 
-  const post = await findPostWithLikes({ id: postId });
+  const post = await findPostWithAuthorAndLikes({ id: postId });
 
   if (!post) {
     return res.sendStatus(404);

@@ -28,6 +28,12 @@ const userPayload = {
   url: `/users/${userId}`,
 };
 
+const userResponse = {
+  ...userPayload,
+  createdAt: userPayload.createdAt.toJSON(),
+  updatedAt: userPayload.updatedAt.toJSON(),
+};
+
 const userWithAllFollows: UserService.UserWithAllFollows = {
   ...userPayload,
   following: [],
@@ -90,8 +96,8 @@ describe("post", () => {
           .spyOn(UserService, "findUserWithAllFollows")
           .mockResolvedValueOnce(userWithAllFollows);
 
-        const findPostWithLikesServiceMock = jest
-          .spyOn(PostService, "findPostWithLikes")
+        const findPostWithAuthorAndLikesServiceMock = jest
+          .spyOn(PostService, "findPostWithAuthorAndLikes")
           .mockResolvedValueOnce(null);
 
         const { statusCode } = await supertest(app)
@@ -102,7 +108,7 @@ describe("post", () => {
         expect(findUserWithAllFollowsServiceMock).toHaveBeenCalledWith({
           id: userId,
         });
-        expect(findPostWithLikesServiceMock).toHaveBeenCalledWith({
+        expect(findPostWithAuthorAndLikesServiceMock).toHaveBeenCalledWith({
           id: postId,
         });
       });
@@ -114,11 +120,13 @@ describe("post", () => {
           .spyOn(UserService, "findUserWithAllFollows")
           .mockResolvedValueOnce(userWithAllFollows);
 
-        const findPostWithLikesServiceMock = jest
-          .spyOn(PostService, "findPostWithLikes")
+        const findPostWithAuthorAndLikesServiceMock = jest
+          .spyOn(PostService, "findPostWithAuthorAndLikes")
           .mockResolvedValueOnce({
             ...postPayload,
+            author: userPayload,
             likes: [],
+            _count: { likes: 0, children: 0 },
           });
 
         const { body, statusCode } = await supertest(app)
@@ -128,12 +136,14 @@ describe("post", () => {
         expect(statusCode).toBe(200);
         expect(body).toEqual({
           ...postResponse,
+          author: userResponse,
           likes: [],
+          _count: { likes: 0, children: 0 },
         });
         expect(findUserWithAllFollowsServiceMock).toHaveBeenCalledWith({
           id: userId,
         });
-        expect(findPostWithLikesServiceMock).toHaveBeenCalledWith({
+        expect(findPostWithAuthorAndLikesServiceMock).toHaveBeenCalledWith({
           id: postId,
         });
       });

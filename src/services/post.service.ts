@@ -20,7 +20,7 @@ export async function findPost(query: Prisma.PostFindUniqueArgs) {
   }
 }
 
-export async function findPostWithLikes(
+export async function findPostWithAuthorAndLikes(
   where: Prisma.PostFindUniqueArgs["where"],
   omit?: Prisma.PostFindUniqueArgs["omit"]
 ) {
@@ -29,9 +29,26 @@ export async function findPostWithLikes(
       where: where,
       omit: omit,
       include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            fullName: true,
+            imageUrl: true,
+            url: true,
+          },
+        },
         likes: {
           select: {
             id: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            children: true,
           },
         },
       },
