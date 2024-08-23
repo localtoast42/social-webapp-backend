@@ -1,4 +1,5 @@
 import supertest from "supertest";
+import { DateTime } from "luxon";
 import * as UserService from "../services/user.service";
 import * as PostService from "../services/post.service";
 import createServer from "../utils/server";
@@ -50,6 +51,8 @@ const updatePostInput = {
   text: "Test post (updated)",
 };
 
+const postCreateDate = new Date(Date.now());
+
 const postPayload = {
   id: postId,
   text: "Test post",
@@ -57,8 +60,11 @@ const postPayload = {
   authorId: userId,
   parentId: null,
   url: `/posts/${postId}`,
-  createdAt: new Date(Date.now()),
-  updatedAt: new Date(Date.now()),
+  createdAt: postCreateDate,
+  updatedAt: postCreateDate,
+  createDateFormatted: DateTime.fromJSDate(postCreateDate).toLocaleString(
+    DateTime.DATE_MED
+  ),
 };
 
 const postResponse = {

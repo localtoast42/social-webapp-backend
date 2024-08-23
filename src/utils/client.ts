@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { DateTime } from "luxon";
 
 const prismaBase = new PrismaClient({
   omit: {
@@ -29,6 +30,14 @@ const prisma = prismaBase.$extends({
         needs: { id: true },
         compute(post) {
           return `/posts/${post.id}`;
+        },
+      },
+      createDateFormatted: {
+        needs: { createdAt: true },
+        compute(post) {
+          return DateTime.fromJSDate(post.createdAt).toLocaleString(
+            DateTime.DATE_MED
+          );
         },
       },
     },

@@ -86,7 +86,7 @@ export async function getChildPostsHandler(
     orderBy: { createdAt: "asc" },
   };
 
-  const posts = await findManyPosts(query);
+  const posts = await findManyPostsWithAuthorAndLikes(query);
 
   return res.json({ data: posts });
 }
