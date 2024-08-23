@@ -1,11 +1,10 @@
-import { Types } from "mongoose";
+import { Prisma } from "@prisma/client";
 import { fakerEN_US as faker } from "@faker-js/faker";
-import { UserCreate } from "../models/user.model";
-import { PostCreate } from "../models/post.model";
-import { createUser } from "../services/user.service";
+import { createUser, createUserAndPosts } from "../services/user.service";
 import { createPost } from "../services/post.service";
+import { CreateUserInput } from "../schemas/user.schema";
 
-export async function createRandomUser() {
+export function createRandomUserInput() {
   const firstName = faker.person.firstName();
   const lastName = faker.person.lastName();
   const password = firstName.concat("", lastName);
@@ -14,7 +13,7 @@ export async function createRandomUser() {
     lastName: lastName,
   });
 
-  const input: UserCreate = {
+  const input: CreateUserInput = {
     username: username,
     password: password,
     firstName: firstName,
@@ -23,8 +22,14 @@ export async function createRandomUser() {
     state: faker.location.state(),
     country: "United States",
     imageUrl: faker.image.avatarGitHub(),
+    isGuest: false,
   };
 
+  return input;
+}
+
+export async function createRandomUser() {
+  const input = createRandomUserInput();
   try {
     const user = await createUser(input);
     return user;
@@ -33,22 +38,42 @@ export async function createRandomUser() {
   }
 }
 
-export async function createRandomPost(userId: Types.ObjectId) {
-  const postDate = faker.date.between({
-    from: "2024-06-01T00:00:00.000Z",
-    to: Date.now(),
-  });
-
-  const input: PostCreate = {
-    author: userId,
+export function createRandomPostInput(userId: string) {
+  const input: Prisma.PostCreateInput = {
     text: faker.lorem.paragraph({ min: 1, max: 4 }),
-    postDate: postDate,
-    isPublicPost: true,
+    isPublic: true,
+    author: { connect: { id: userId } },
   };
+
+  return input;
+}
+
+export async function createRandomPost(userId: string) {
+  const input = createRandomPostInput(userId);
 
   try {
     const post = await createPost(input);
     return post;
+  } catch (e: any) {
+    throw new Error(e);
+  }
+}
+
+export async function createRandomUserAndPosts(postCount: number) {
+  const userInput = createRandomUserInput();
+
+  const posts = [];
+
+  for (let i = 0; i < postCount; i++) {
+    posts.push({
+      text: faker.lorem.paragraph({ min: 1, max: 4 }),
+      isPublic: true,
+    });
+  }
+
+  try {
+    const newUser = await createUserAndPosts(userInput, posts);
+    return newUser;
   } catch (e: any) {
     throw new Error(e);
   }

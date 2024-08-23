@@ -1,16 +1,16 @@
 import { Request, Response } from "express";
 import config from "config";
 import { signJwt } from "../utils/jwt.utils";
-import { FindUserResult, validatePassword } from "../services/user.service";
+import { UserWithAllFollows, validatePassword } from "../services/user.service";
 import {
   createSession,
   findAndUpdateSession,
   findSessions,
 } from "../services/session.service";
-import { CreateSessionInput } from "../schemas/session.schema";
+import { CreateSessionRequest } from "../schemas/session.schema";
 
 export async function createUserSessionHandler(
-  req: Request<{}, {}, CreateSessionInput["body"]>,
+  req: Request<{}, {}, CreateSessionRequest["body"]>,
   res: Response
 ) {
   const user = await validatePassword(req.body);
@@ -20,18 +20,18 @@ export async function createUserSessionHandler(
   }
 
   const session = await createSession({
-    user: user.id,
+    user: { connect: { id: user.id } },
     userAgent: req.get("user-agent") || "",
   });
 
   const accessToken = signJwt(
-    { ...user, session: session._id },
+    { ...user, session: session.id },
     "accessTokenSecret",
     { expiresIn: config.get<string>("accessTokenTtl") }
   );
 
   const refreshToken = signJwt(
-    { ...user, session: session._id },
+    { ...user, session: session.id },
     "refreshTokenSecret",
     { expiresIn: config.get<string>("refreshTokenTtl") }
   );
@@ -40,10 +40,14 @@ export async function createUserSessionHandler(
 }
 
 export async function getUserSessionsHandler(req: Request, res: Response) {
-  const user: FindUserResult = res.locals.user;
-  const userId = user._id;
+  const user: NonNullable<UserWithAllFollows> = res.locals.user;
 
-  const sessions = await findSessions({ user: userId, valid: true });
+  const sessions = await findSessions({
+    where: {
+      userId: user.id,
+      valid: true,
+    },
+  });
 
   return res.json({
     data: sessions,
@@ -51,16 +55,15 @@ export async function getUserSessionsHandler(req: Request, res: Response) {
 }
 
 export async function deleteUserSessionHandler(req: Request, res: Response) {
-  const sessionId: string | null = res.locals.session;
+  const sessionId: number = res.locals.session;
 
-  const updatedSession = await findAndUpdateSession(
-    { _id: sessionId },
-    { valid: false },
-    { new: true }
-  );
+  const updatedSession = await findAndUpdateSession({
+    where: { id: sessionId },
+    data: { valid: false },
+  });
 
   return res.json({
-    session: updatedSession?.toJSON(),
+    session: updatedSession,
     accessToken: null,
     refreshToken: null,
   });

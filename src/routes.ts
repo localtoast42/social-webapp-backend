@@ -21,14 +21,6 @@ import {
   updatePostSchema,
 } from "./schemas/post.schema";
 import {
-  createCommentSchema,
-  deleteCommentSchema,
-  getCommentsByPostSchema,
-  getCommentSchema,
-  likeCommentSchema,
-  updateCommentSchema,
-} from "./schemas/comment.schema";
-import {
   createUserSessionHandler,
   deleteUserSessionHandler,
   getUserSessionsHandler,
@@ -47,6 +39,7 @@ import {
 import {
   createPostHandler,
   deletePostHandler,
+  getChildPostsHandler,
   getFollowedPostsHandler,
   getPostHandler,
   getPostsByUserHandler,
@@ -54,14 +47,6 @@ import {
   likePostHandler,
   updatePostHandler,
 } from "./controllers/post.controller";
-import {
-  createCommentHandler,
-  deleteCommentHandler,
-  getCommentHandler,
-  getCommentsByPostHandler,
-  likeCommentHandler,
-  updateCommentHandler,
-} from "./controllers/comment.controller";
 
 function routes(app: Express) {
   app.get("/healthcheck", (req: Request, res: Response) => res.sendStatus(200));
@@ -179,38 +164,14 @@ function routes(app: Express) {
   // Comment Routes
   app.post(
     "/api/v2/posts/:postId/comments",
-    [requireUser, validateResource(createCommentSchema)],
-    createCommentHandler
+    [requireUser, validateResource(createPostSchema)],
+    createPostHandler
   );
 
   app.get(
     "/api/v2/posts/:postId/comments",
-    [requireUser, validateResource(getCommentsByPostSchema)],
-    getCommentsByPostHandler
-  );
-
-  app.get(
-    "/api/v2/comments/:commentId",
-    [requireUser, validateResource(getCommentSchema)],
-    getCommentHandler
-  );
-
-  app.put(
-    "/api/v2/comments/:commentId",
-    [requireUser, validateResource(updateCommentSchema)],
-    updateCommentHandler
-  );
-
-  app.delete(
-    "/api/v2/comments/:commentId",
-    [requireUser, validateResource(deleteCommentSchema)],
-    deleteCommentHandler
-  );
-
-  app.post(
-    "/api/v2/comments/:commentId/like",
-    [requireUser, validateResource(likeCommentSchema)],
-    likeCommentHandler
+    [requireUser, validateResource(getPostSchema)],
+    getChildPostsHandler
   );
 }
 

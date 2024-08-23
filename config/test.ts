@@ -1,6 +1,5 @@
 export default {
   port: 3000,
-  dbUri: "",
   frontendUrl: "",
   logRequests: false,
   allowNewPublicUsers: true,
@@ -9,4 +8,6 @@ export default {
   refreshTokenTtl: "1d",
   accessTokenSecret: "accessTest",
   refreshTokenSecret: "refreshTest",
+  firstAdminUsername: "admin",
+  firstAdminPassword: "admin",
 };

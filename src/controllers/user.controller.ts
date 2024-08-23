@@ -1,242 +1,270 @@
 import { Request, Response } from "express";
 import config from "config";
-import {
-  FilterQuery,
-  ProjectionType,
-  QueryOptions,
-  UpdateQuery,
-} from "mongoose";
 import { omit } from "lodash";
+import { Prisma } from "@prisma/client";
 import logger from "../utils/logger";
 import {
   createUser,
   findUser,
   findManyUsers,
   findAndUpdateUser,
+  findUserWithFollowing,
+  UserWithAllFollows,
   deleteUser,
-  FindUserResult,
 } from "../services/user.service";
 import {
-  CreateUserInput,
-  DeleteUserInput,
-  FollowUserInput,
-  PopulateUsersInput,
-  ReadUserInput,
-  UpdateUserInput,
+  CreateUserRequest,
+  DeleteUserRequest,
+  FollowUserRequest,
+  PopulateUsersRequest,
+  ReadUserRequest,
+  UpdateUserRequest,
 } from "../schemas/user.schema";
-import { createRandomPost, createRandomUser } from "../utils/populateDatabase";
-import { User } from "../models/user.model";
+import { createRandomUserAndPosts } from "../utils/populateDatabase";
 
 export async function createUserHandler(
-  req: Request<{}, {}, CreateUserInput["body"]>,
+  req: Request<{}, {}, CreateUserRequest["body"]>,
   res: Response
 ) {
-  req.body.isGuest = !config.get<boolean>("allowNewPublicUsers");
+  const userInput = {
+    ...omit(req.body, "passwordConfirmation"),
+    isGuest: !config.get<boolean>("allowNewPublicUsers"),
+  };
 
   try {
-    const user = await createUser(req.body);
+    const user = await createUser(userInput);
     logger.info(`User ${user.username} created`);
     return res.send(user);
   } catch (e: any) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      if (e.code === "P2002") {
+        const errorMessage = `Unique constraint failed on the fields: ${e.meta?.target}`;
+        logger.info("PrismaClientKnownRequestError: " + errorMessage);
+        return res.status(409).json({
+          message: errorMessage,
+          target: e.meta?.target,
+        });
+      }
+    }
     logger.error(e);
-    return res.status(409).json(e.message);
+    return res.sendStatus(500);
   }
 }
 
 export async function getUserHandler(
-  req: Request<ReadUserInput["params"]>,
-  res: Response
+  req: Request<ReadUserRequest["params"]>,
+  res: Response<{}, { user: UserWithAllFollows }>
 ) {
-  const requestingUser: FindUserResult = res.locals.user;
-  const requestingUserId = requestingUser.id;
+  const requestingUser = res.locals.user;
   const userId = req.params.userId;
 
-  const user = await findUser({ _id: userId });
+  const user = await findUser({
+    where: { id: userId },
+  });
 
   if (!user) {
     return res.sendStatus(404);
   }
 
-  const userObject = omit(user.toJSON(), "password");
+  const userData = {
+    ...user,
+    followedByMe: requestingUser?.following.some((obj) => obj.id === user.id),
+  };
 
-  userObject.followedByMe = userObject.followers.includes(requestingUserId);
-
-  return res.json(userObject);
+  return res.json(userData);
 }
 
 export async function getSelfHandler(req: Request, res: Response) {
-  const user: FindUserResult = res.locals.user;
+  const user: UserWithAllFollows = res.locals.user;
 
-  return res.json(omit(user.toJSON(), "password"));
+  const userData = {
+    ...user,
+    following: user?.following.map((obj) => obj.id),
+    followedBy: user?.followedBy.map((obj) => obj.id),
+  };
+
+  return res.json(userData);
 }
 
-export async function getUserListHandler(req: Request, res: Response) {
-  const user: FindUserResult = res.locals.user;
-  const userId = user._id;
+export async function getUserListHandler(
+  req: Request,
+  res: Response<{}, { user: UserWithAllFollows }>
+) {
+  const user = res.locals.user;
+
+  if (!user) {
+    return res.sendStatus(403);
+  }
 
   const queryTerms: object[] = [];
-  queryTerms.push({ _id: { $exists: true } });
 
   if (req.query.q) {
     const queryString = req.query.q as string;
-    let regex = new RegExp(queryString, "i");
-    queryTerms.push({ $or: [{ firstName: regex }, { lastName: regex }] });
+    queryTerms.push({
+      OR: [
+        {
+          firstName: {
+            contains: queryString,
+            mode: "insensitive",
+          },
+        },
+        {
+          lastName: {
+            contains: queryString,
+            mode: "insensitive",
+          },
+        },
+      ],
+    });
   }
 
-  const query: FilterQuery<User> = {
-    _id: { $ne: userId },
-    isGuest: false,
-    $and: queryTerms,
+  const query: Prisma.UserFindManyArgs = {
+    where: {
+      AND: [{ id: { not: user.id } }, { isGuest: false }, ...queryTerms],
+    },
+    orderBy: { lastName: "asc" },
   };
 
-  const projection: ProjectionType<User> = {
-    username: 1,
-    firstName: 1,
-    lastName: 1,
-    city: 1,
-    state: 1,
-    country: 1,
-    imageUrl: 1,
-    fullName: 1,
-    url: 1,
-  };
-
-  const options: QueryOptions = {
-    sort: { lastName: 1 },
-  };
-
-  const users = await findManyUsers(query, projection, options);
+  const users = await findManyUsers(query);
 
   return res.json({ data: users });
 }
 
 export async function updateUserHandler(
-  req: Request<UpdateUserInput["params"], {}, UpdateUserInput["body"]>,
-  res: Response
+  req: Request<UpdateUserRequest["params"], {}, UpdateUserRequest["body"]>,
+  res: Response<{}, { user: UserWithAllFollows }>
 ) {
-  const requestingUser: FindUserResult = res.locals.user;
-  const requestingUserId = requestingUser.id;
+  const requestingUser = res.locals.user;
   const userId = req.params.userId;
 
-  const user = await findUser({ _id: userId });
+  if (!requestingUser) {
+    return res.sendStatus(403);
+  }
+
+  const user = await findUser({ where: { id: userId } });
 
   if (!user) {
     return res.sendStatus(404);
   }
 
-  if (user.id !== requestingUserId) {
+  if (user.id !== requestingUser.id) {
     return res.sendStatus(403);
   }
 
-  const update: UpdateQuery<User> = req.body;
+  const update = req.body;
 
-  const updatedUser = await findAndUpdateUser({ _id: userId }, update, {
-    new: true,
-  });
+  const query: Prisma.UserUpdateArgs = {
+    where: { id: userId },
+    data: { ...update },
+  };
 
-  return res.json(omit(updatedUser?.toJSON(), "password"));
+  const updatedUser = await findAndUpdateUser(query);
+
+  return res.json(updatedUser);
 }
 
 export async function deleteUserHandler(
-  req: Request<DeleteUserInput["params"]>,
-  res: Response
+  req: Request<DeleteUserRequest["params"]>,
+  res: Response<{}, { user: UserWithAllFollows }>
 ) {
-  const requestingUser: FindUserResult = res.locals.user;
-  const requestingUserId = requestingUser.id;
+  const requestingUser = res.locals.user;
   const userId = req.params.userId;
 
-  const user = await findUser({ _id: userId });
+  if (!requestingUser) {
+    return res.sendStatus(403);
+  }
+
+  const user = await findUser({ where: { id: userId } });
 
   if (!user) {
     return res.sendStatus(404);
   }
 
-  if (user.id !== requestingUserId) {
+  if (user.id !== requestingUser.id) {
     return res.sendStatus(403);
   }
 
-  const result = await deleteUser({ _id: userId });
+  const [deletedSessions, deletedPosts, deletedUser] = await deleteUser(
+    user.id
+  );
 
   return res.json({
-    ...result,
+    deletedSessionCount: deletedSessions.count,
+    deletedPostsCount: deletedPosts.count,
+    deletedUser: deletedUser,
     accessToken: null,
     refreshToken: null,
   });
 }
 
 export async function getUserFollowsHandler(
-  req: Request<ReadUserInput["params"]>,
+  req: Request<ReadUserRequest["params"]>,
   res: Response
 ) {
   const userId = req.params.userId;
 
-  const userFollows = await findUser({ _id: userId }, "following");
+  const user = await findUserWithFollowing({ id: userId });
 
-  if (userFollows === null) {
+  if (user === null) {
     return res.sendStatus(404);
   }
 
-  return res.json(userFollows);
+  const result = {
+    id: user.id,
+    data: user.following,
+  };
+
+  return res.json(result);
 }
 
 export async function followUserHandler(
-  req: Request<FollowUserInput["params"], {}, FollowUserInput["body"]>,
-  res: Response
+  req: Request<FollowUserRequest["params"], {}, FollowUserRequest["body"]>,
+  res: Response<{}, { user: UserWithAllFollows }>
 ) {
-  const follow = JSON.parse(req.body.follow);
-  const requestingUser: FindUserResult = res.locals.user;
+  const requestingUser = res.locals.user;
   const targetUserId = req.params.userId;
+  const follow: boolean = JSON.parse(req.body.follow);
 
-  const targetUser = await findUser({ _id: targetUserId });
+  if (!requestingUser) {
+    return res.sendStatus(403);
+  }
+
+  const targetUser = await findUser({ where: { id: targetUserId } });
 
   if (!targetUser) {
     return res.sendStatus(404);
   }
 
-  requestingUser.following = requestingUser.following.filter((userId) => {
-    return userId.toString() !== targetUser._id.toString();
+  const update = follow
+    ? { connect: { id: targetUserId } }
+    : { disconnect: { id: targetUserId } };
+
+  const updatedUser = await findAndUpdateUser({
+    where: { id: requestingUser.id },
+    data: { following: update },
+    include: {
+      following: {
+        select: { id: true },
+      },
+    },
   });
-  targetUser.followers = targetUser.followers.filter((userId) => {
-    return userId.toString() !== requestingUser._id.toString();
-  });
 
-  if (follow) {
-    requestingUser.following.push(targetUser._id);
-    targetUser.followers.push(requestingUser._id);
-  }
-
-  const requestingUserUpdates: UpdateQuery<User> = {
-    following: requestingUser.following,
-  };
-
-  const targetUserUpdates: UpdateQuery<User> = {
-    followers: targetUser.followers,
-  };
-
-  await Promise.all([
-    findAndUpdateUser({ _id: requestingUser.id }, requestingUserUpdates, {
-      new: true,
-    }),
-    findAndUpdateUser({ _id: targetUserId }, targetUserUpdates, { new: true }),
-  ]);
-
-  return res.sendStatus(200);
+  return res.json(updatedUser);
 }
 
 export async function populateUsers(
-  req: Request<{}, {}, PopulateUsersInput["body"]>,
+  req: Request<{}, {}, PopulateUsersRequest["body"]>,
   res: Response
 ) {
   const userCount = req.body.userCount;
   const postCount = req.body.postCount;
 
-  for (let i = 0; i < userCount; i++) {
-    let user = await createRandomUser();
+  const users = [];
 
-    for (let j = 0; j < postCount; j++) {
-      createRandomPost(user._id);
-    }
+  for (let i = 0; i < userCount; i++) {
+    let user = await createRandomUserAndPosts(postCount);
+    users.push(user);
   }
 
-  res.sendStatus(201);
+  res.status(201).json({ data: users });
 }

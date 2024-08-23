@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { faker } from "@faker-js/faker";
 import logger from "../utils/logger";
-import { UserCreate } from "../models/user.model";
 import { createUser } from "../services/user.service";
+import { CreateUserInput } from "../schemas/user.schema";
 
 export async function createGuest(
   req: Request,
@@ -11,7 +11,7 @@ export async function createGuest(
 ) {
   const guestNum = faker.string.alphanumeric(8);
 
-  const userInput: UserCreate = {
+  const userInput: CreateUserInput = {
     username: `Guest_#${guestNum}`,
     password: "guest",
     firstName: "Guest",

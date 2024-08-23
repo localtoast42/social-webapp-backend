@@ -1,53 +1,202 @@
-import {
-  FilterQuery,
-  ProjectionType,
-  QueryOptions,
-  UpdateQuery,
-} from "mongoose";
-import PostModel, { Post, PostCreate } from "../models/post.model";
-import { User } from "../models/user.model";
+import { Prisma } from "@prisma/client";
+import prisma from "../utils/client";
 import logger from "../utils/logger";
 
-export async function createPost(input: PostCreate) {
+export async function createPost(input: Prisma.PostCreateInput) {
   try {
-    const post = await PostModel.create(input);
-    return post.toJSON();
+    return prisma.post.create({ data: input });
   } catch (e: any) {
     logger.error(e);
     throw new Error(e);
   }
 }
 
-export async function findPost(query: FilterQuery<Post>) {
-  const result = PostModel.findOne(query)
-    .populate<{ author: User }>("author", "-password")
-    .lean({ virtuals: true });
-  return result;
+export async function findPost(query: Prisma.PostFindUniqueArgs) {
+  try {
+    return prisma.post.findUnique(query);
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
 }
 
-export async function findManyPosts(
-  query: FilterQuery<Post>,
-  projection?: ProjectionType<Post>,
-  options?: QueryOptions
+export async function findPostWithAuthorAndLikes(
+  where: Prisma.PostFindUniqueArgs["where"],
+  omit?: Prisma.PostFindUniqueArgs["omit"]
 ) {
-  const result = PostModel.find(query, projection, options)
-    .populate<{ author: User }>("author", "-password")
-    .lean({ virtuals: true });
-  return result;
+  try {
+    return prisma.post.findUnique({
+      where: where,
+      omit: omit,
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            fullName: true,
+            imageUrl: true,
+            url: true,
+          },
+        },
+        likes: {
+          select: {
+            id: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            children: true,
+          },
+        },
+      },
+    });
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
 }
 
-export async function findPostsByUser(query: FilterQuery<Post>) {
-  return PostModel.findOne(query).lean();
+export async function findManyPosts(query: Prisma.PostFindManyArgs) {
+  try {
+    return prisma.post.findMany(query);
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
 }
 
-export async function findAndUpdatePost(
-  query: FilterQuery<Post>,
-  update: UpdateQuery<Post>,
-  options: QueryOptions
+export async function findManyPostsWithAuthorAndLikes(
+  query: Prisma.PostFindManyArgs
 ) {
-  return PostModel.findOneAndUpdate(query, update, options);
+  try {
+    return prisma.post.findMany({
+      ...query,
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            fullName: true,
+            imageUrl: true,
+            url: true,
+          },
+        },
+        likes: {
+          select: {
+            id: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            children: true,
+          },
+        },
+      },
+    });
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
 }
 
-export async function deletePost(query: FilterQuery<Post>) {
-  return PostModel.deleteOne(query);
+export async function findFollowedPosts(
+  userId: string,
+  take?: number,
+  skip?: number
+) {
+  try {
+    const result = await prisma.post.findMany({
+      where: {
+        isPublic: true,
+        parentId: null,
+        author: {
+          followedBy: {
+            some: {
+              id: userId,
+            },
+          },
+        },
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            imageUrl: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: take,
+      skip: skip,
+    });
+
+    return result;
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
+}
+
+export async function findAndUpdatePost(query: Prisma.PostUpdateArgs) {
+  try {
+    return prisma.post.update(query);
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
+}
+
+export async function updatePostWithLikes(
+  where: Prisma.PostUpdateArgs["where"],
+  data: Prisma.PostUpdateArgs["data"],
+  omit?: Prisma.PostUpdateArgs["omit"]
+) {
+  try {
+    return prisma.post.update({
+      where: where,
+      omit: omit,
+      data: data,
+      include: {
+        likes: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
+}
+
+export async function deletePost(postId: string) {
+  try {
+    return prisma.post.delete({
+      where: { id: postId },
+    });
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
+}
+
+export async function deleteManyPosts(query: Prisma.PostDeleteManyArgs) {
+  try {
+    return prisma.post.deleteMany(query);
+  } catch (e: any) {
+    logger.error(e);
+    throw new Error(e);
+  }
 }

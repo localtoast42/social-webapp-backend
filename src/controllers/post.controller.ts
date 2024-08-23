@@ -1,148 +1,208 @@
 import { Request, Response } from "express";
-import { QueryOptions, UpdateQuery } from "mongoose";
+import { Prisma } from "@prisma/client";
 import {
-  CreatePostInput,
-  ReadPostInput,
-  UpdatePostInput,
-  DeletePostInput,
-  ReadPostByUserInput,
-  LikePostInput,
+  CreatePostRequest,
+  ReadPostRequest,
+  UpdatePostRequest,
+  DeletePostRequest,
+  ReadPostByUserRequest,
+  LikePostRequest,
 } from "../schemas/post.schema";
 import {
   createPost,
   findPost,
   findAndUpdatePost,
-  deletePost,
   findManyPosts,
+  deletePost,
+  updatePostWithLikes,
+  findManyPostsWithAuthorAndLikes,
+  findPostWithAuthorAndLikes,
 } from "../services/post.service";
-import { deleteManyComments } from "../services/comment.service";
-import { FindUserResult } from "../services/user.service";
-import { Post } from "../models/post.model";
+import { UserWithAllFollows } from "../services/user.service";
 
 export async function createPostHandler(
-  req: Request<{}, {}, CreatePostInput["body"]>,
-  res: Response
+  req: Request<CreatePostRequest["params"], {}, CreatePostRequest["body"]>,
+  res: Response<{}, { user: UserWithAllFollows }>
 ) {
-  const user: FindUserResult = res.locals.user;
+  const user = res.locals.user;
 
   if (!user) {
     return res.sendStatus(403);
   }
 
   const body = req.body;
-  const postDate = new Date(Date.now());
 
-  const post = await createPost({
+  const input: Prisma.PostCreateInput = {
     ...body,
-    author: user._id,
-    postDate: postDate,
-    isPublicPost: !user.isGuest,
-  });
+    isPublic: !user.isGuest,
+    author: { connect: { id: user.id } },
+  };
+
+  if (req.params.postId) {
+    input.parent = { connect: { id: req.params.postId } };
+  }
+
+  const post = await createPost(input);
 
   return res.status(201).json(post);
 }
 
 export async function getPostHandler(
-  req: Request<ReadPostInput["params"]>,
+  req: Request<ReadPostRequest["params"]>,
   res: Response
 ) {
   const postId = req.params.postId;
 
-  const post = await findPost({ _id: postId });
+  const post = await findPostWithAuthorAndLikes({ id: postId });
 
   if (!post) {
     return res.sendStatus(404);
   }
 
-  return res.json(post);
+  const postData = {
+    ...post,
+    likes: post.likes.map((obj) => obj.id),
+  };
+
+  return res.json(postData);
 }
 
-export async function getRecentPostsHandler(req: Request, res: Response) {
-  const user: FindUserResult = res.locals.user;
-  const userId = user._id;
+export async function getChildPostsHandler(
+  req: Request<ReadPostRequest["params"]>,
+  res: Response<{}, { user: UserWithAllFollows }>
+) {
+  const user = res.locals.user;
+  const postId = req.params.postId;
 
-  const query = {
-    $or: [{ author: userId }, { isPublicPost: true }],
-  };
-
-  const options: QueryOptions = {
-    sort: { postDate: -1 },
-  };
-
-  if (req.query.limit) {
-    options.limit = parseInt(req.query.limit as string);
+  if (!user) {
+    return res.sendStatus(403);
   }
 
-  if (req.query.skip) {
-    options.skip = parseInt(req.query.skip as string);
+  const query: Prisma.PostFindManyArgs = {
+    where: {
+      parentId: postId,
+      OR: [{ authorId: user.id }, { isPublic: true }],
+    },
+    orderBy: { createdAt: "asc" },
+  };
+
+  const posts = await findManyPostsWithAuthorAndLikes(query);
+
+  const postsData = posts.map((post) => {
+    return {
+      ...post,
+      likes: post.likes.map((obj) => obj.id),
+    };
+  });
+
+  return res.json({ data: postsData });
+}
+
+export async function getRecentPostsHandler(
+  req: Request,
+  res: Response<{}, { user: UserWithAllFollows }>
+) {
+  const user = res.locals.user;
+
+  if (!user) {
+    return res.sendStatus(403);
   }
 
-  const posts = await findManyPosts(query, {}, options);
+  const query: Prisma.PostFindManyArgs = {
+    where: {
+      parentId: null,
+      OR: [{ authorId: user.id }, { isPublic: true }],
+    },
+    orderBy: { createdAt: "desc" },
+    take: req.query.limit ? parseInt(req.query.limit as string) : undefined,
+    skip: req.query.skip ? parseInt(req.query.skip as string) : undefined,
+  };
+
+  const posts = await findManyPostsWithAuthorAndLikes(query);
 
   if (!posts) {
     return res.sendStatus(404);
   }
 
-  return res.json({ data: posts });
+  const postsData = posts.map((post) => {
+    return {
+      ...post,
+      likes: post.likes.map((obj) => obj.id),
+    };
+  });
+
+  return res.json({ data: postsData });
 }
 
-export async function getFollowedPostsHandler(req: Request, res: Response) {
-  const user: FindUserResult = res.locals.user;
-  const userId = user._id;
-  const following = user.following;
+export async function getFollowedPostsHandler(
+  req: Request,
+  res: Response<{}, { user: UserWithAllFollows }>
+) {
+  const user = res.locals.user;
 
-  const query = {
-    author: { $in: [...following, userId] },
-    isPublicPost: true,
-  };
-
-  const options: QueryOptions = {
-    sort: { postDate: -1 },
-  };
-
-  if (req.query.limit) {
-    options.limit = parseInt(req.query.limit as string);
+  if (!user) {
+    return res.sendStatus(403);
   }
 
-  if (req.query.skip) {
-    options.skip = parseInt(req.query.skip as string);
-  }
+  const query: Prisma.PostFindManyArgs = {
+    where: {
+      isPublic: true,
+      parentId: null,
+      author: {
+        followedBy: {
+          some: {
+            id: user.id,
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: req.query.limit ? parseInt(req.query.limit as string) : undefined,
+    skip: req.query.skip ? parseInt(req.query.skip as string) : undefined,
+  };
 
-  const posts = await findManyPosts(query, {}, options);
+  const posts = await findManyPostsWithAuthorAndLikes(query);
 
   if (!posts) {
     return res.sendStatus(404);
   }
 
-  return res.json({ data: posts });
+  const postsData = posts.map((post) => {
+    return {
+      ...post,
+      likes: post.likes.map((obj) => obj.id),
+    };
+  });
+
+  return res.json({ data: postsData });
 }
 
 export async function getPostsByUserHandler(
-  req: Request<ReadPostByUserInput["params"]>,
-  res: Response
+  req: Request<ReadPostByUserRequest["params"]>,
+  res: Response<{}, { user: UserWithAllFollows }>
 ) {
-  const requestingUser: FindUserResult = res.locals.user;
-  const requestingUserId = requestingUser._id;
+  const requestingUser = res.locals.user;
   const targetUserId = req.params.userId;
 
-  let query = {};
-
-  if (targetUserId === requestingUserId.toString()) {
-    query = {
-      author: targetUserId,
-    };
-  } else {
-    query = {
-      author: targetUserId,
-      isPublicPost: true,
-    };
+  if (!requestingUser) {
+    return res.sendStatus(403);
   }
 
-  const options: QueryOptions = {
-    sort: { postDate: -1 },
+  const query: Prisma.PostFindManyArgs = {
+    where: {
+      parentId: null,
+      authorId: targetUserId,
+      OR: [
+        { isPublic: true },
+        { isPublic: targetUserId !== requestingUser.id },
+      ],
+    },
+    orderBy: { createdAt: "desc" },
   };
 
-  const posts = await findManyPosts(query, {}, options);
+  const posts = await findManyPosts(query);
 
   if (!posts) {
     return res.sendStatus(404);
@@ -152,88 +212,97 @@ export async function getPostsByUserHandler(
 }
 
 export async function updatePostHandler(
-  req: Request<UpdatePostInput["params"], {}, UpdatePostInput["body"]>,
-  res: Response
+  req: Request<UpdatePostRequest["params"], {}, UpdatePostRequest["body"]>,
+  res: Response<{}, { user: UserWithAllFollows }>
 ) {
-  const user: FindUserResult = res.locals.user;
+  const user = res.locals.user;
   const postId = req.params.postId;
 
-  const post = await findPost({ _id: postId });
+  if (!user) {
+    return res.sendStatus(403);
+  }
+
+  const post = await findPost({
+    where: { id: postId },
+  });
 
   if (!post) {
     return res.sendStatus(404);
   }
 
-  if (user.id !== post.author.id) {
+  if (user.id !== post.authorId) {
     return res.sendStatus(403);
   }
 
-  const update: UpdateQuery<Post> = {
-    ...req.body,
-    lastEditDate: new Date(Date.now()),
-  };
-
-  const updatedPost = await findAndUpdatePost({ _id: postId }, update, {
-    new: true,
+  const updatedPost = await findAndUpdatePost({
+    where: { id: postId },
+    data: { ...req.body },
   });
 
   return res.json(updatedPost);
 }
 
 export async function likePostHandler(
-  req: Request<LikePostInput["params"], {}, LikePostInput["body"]>,
-  res: Response
+  req: Request<LikePostRequest["params"], {}, LikePostRequest["body"]>,
+  res: Response<{}, { user: UserWithAllFollows }>
 ) {
-  const like = JSON.parse(req.body.like);
-  const user: FindUserResult = res.locals.user;
+  const user = res.locals.user;
   const postId = req.params.postId;
+  const like: boolean = JSON.parse(req.body.like);
 
-  const post = await findPost({ _id: postId });
-
-  if (!post) {
-    return res.sendStatus(404);
-  }
-
-  post.likes = post.likes.filter((userid) => userid != user.id);
-
-  if (like) {
-    post.likes.push(user.id);
-  }
-
-  const update = {
-    likes: post.likes,
-  };
-
-  const updatedPost = await findAndUpdatePost({ _id: postId }, update, {
-    new: true,
-  });
-
-  return res.json(updatedPost);
-}
-
-export async function deletePostHandler(
-  req: Request<DeletePostInput["params"]>,
-  res: Response
-) {
-  const user: FindUserResult = res.locals.user;
-  const postId = req.params.postId;
-
-  const post = await findPost({ _id: postId });
-
-  if (!post) {
-    return res.sendStatus(404);
-  }
-
-  if (user.id !== post.author.id) {
+  if (!user) {
     return res.sendStatus(403);
   }
 
-  const commentResult = await deleteManyComments({ post: postId });
-
-  const postResult = await deletePost({ _id: postId });
-
-  return res.json({
-    posts_deleted: postResult.deletedCount,
-    comments_deleted: commentResult.deletedCount,
+  const post = await findPost({
+    where: { id: postId },
   });
+
+  if (!post) {
+    return res.sendStatus(404);
+  }
+
+  const update = like
+    ? { connect: { id: user.id } }
+    : { disconnect: { id: user.id } };
+
+  const updatedPost = await updatePostWithLikes(
+    { id: postId },
+    { likes: update }
+  );
+
+  const updatedPostData = {
+    ...updatedPost,
+    likes: updatedPost.likes.map((obj) => obj.id),
+  };
+
+  return res.json(updatedPostData);
+}
+
+export async function deletePostHandler(
+  req: Request<DeletePostRequest["params"]>,
+  res: Response<{}, { user: UserWithAllFollows }>
+) {
+  const user = res.locals.user;
+  const postId = req.params.postId;
+
+  if (!user) {
+    return res.sendStatus(403);
+  }
+
+  const post = await findPost({
+    where: { id: postId },
+  });
+
+  if (!post) {
+    return res.sendStatus(404);
+  }
+
+  if (user.id !== post.authorId) {
+    return res.sendStatus(403);
+  }
+
+  const archivedPost = await deletePost(postId);
+
+  return res.json(archivedPost);
 }

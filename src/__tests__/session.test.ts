@@ -1,9 +1,7 @@
 import supertest from "supertest";
-import mongoose from "mongoose";
 import config from "config";
 import createServer from "../utils/server";
-import UserModel from "../models/user.model";
-import SessionModel from "../models/session.model";
+import prisma from "../utils/client";
 import * as UserService from "../services/user.service";
 import * as SessionService from "../services/session.service";
 import { createUserSessionHandler } from "../controllers/session.controller";
@@ -11,8 +9,7 @@ import * as JwtUtils from "../utils/jwt.utils";
 
 const app = createServer();
 
-const userObjectId = new mongoose.Types.ObjectId();
-const userId = userObjectId.toString();
+const userId = "testId";
 
 const userInput = {
   username: "testuser",
@@ -27,7 +24,6 @@ const userInput = {
 };
 
 const userPayload = {
-  _id: userObjectId,
   id: userId,
   username: "testuser",
   firstName: "first",
@@ -38,28 +34,36 @@ const userPayload = {
   imageUrl: "",
   isAdmin: false,
   isGuest: false,
-  followers: [],
-  following: [],
+  createdAt: new Date(Date.now()),
+  updatedAt: new Date(Date.now()),
+  fullName: "first last",
+  url: `/users/${userId}`,
 };
 
-const userDocument = new UserModel(userPayload);
+const userWithAllFollows: UserService.UserWithAllFollows = {
+  ...userPayload,
+  following: [],
+  followedBy: [],
+};
 
 const sessionPayload = {
-  _id: new mongoose.Types.ObjectId(),
-  user: userId,
+  id: 1234,
+  userId: userId,
   valid: true,
   userAgent: "PostmanRuntime/7.39.0",
+  createdAt: new Date(Date.now()),
+  updatedAt: new Date(Date.now()),
 };
 
-const sessionDocument = new SessionModel(sessionPayload);
-const updatedSessionDocument = new SessionModel({
+const sessionResponse = {
   ...sessionPayload,
-  valid: false,
-});
+  createdAt: sessionPayload.createdAt.toJSON(),
+  updatedAt: sessionPayload.updatedAt.toJSON(),
+};
 
 const jwtPayload = {
   ...userPayload,
-  session: sessionPayload._id,
+  session: sessionPayload.id,
 };
 
 const jwt = JwtUtils.signJwt(jwtPayload, "accessTokenSecret");
@@ -74,13 +78,9 @@ describe("session", () => {
   describe("re-issue expired access token", () => {
     describe("given access token is expired and no refresh token is provided", () => {
       it("should return a 401 without sending a new access token", async () => {
-        const findUserServiceMock = jest
-          .spyOn(UserService, "findUser")
-          .mockResolvedValueOnce(userDocument);
-
-        const findSessionByIdMock = jest
-          .spyOn(SessionModel, "findById")
-          .mockResolvedValueOnce(sessionDocument.toJSON());
+        const findUserWithAllFollowsServiceMock = jest
+          .spyOn(UserService, "findUserWithAllFollows")
+          .mockResolvedValueOnce(userWithAllFollows);
 
         const { statusCode, headers } = await supertest(app)
           .get("/authcheck")
@@ -88,21 +88,15 @@ describe("session", () => {
 
         expect(statusCode).toBe(401);
         expect(headers["x-access-token"]).not.toBeDefined();
-        expect(findUserServiceMock).not.toHaveBeenCalled();
-        expect(findSessionByIdMock).not.toHaveBeenCalled();
+        expect(findUserWithAllFollowsServiceMock).not.toHaveBeenCalled();
       });
     });
 
     describe("given access token is expired and an invalid refresh token is provided", () => {
       it("should return a 401 without sending a new access token", async () => {
-        const findUserServiceMock = jest
-          .spyOn(UserService, "findUser")
-          .mockResolvedValueOnce(userDocument)
-          .mockResolvedValueOnce(userDocument);
-
-        const findSessionByIdMock = jest
-          .spyOn(SessionModel, "findById")
-          .mockResolvedValueOnce(sessionDocument.toJSON());
+        const findUserWithAllFollowsServiceMock = jest
+          .spyOn(UserService, "findUserWithAllFollows")
+          .mockResolvedValueOnce(userWithAllFollows);
 
         const { statusCode, headers } = await supertest(app)
           .get("/authcheck")
@@ -111,25 +105,27 @@ describe("session", () => {
 
         expect(statusCode).toBe(401);
         expect(headers["x-access-token"]).not.toBeDefined();
-        expect(findUserServiceMock).not.toHaveBeenCalled();
-        expect(findSessionByIdMock).not.toHaveBeenCalled();
+        expect(findUserWithAllFollowsServiceMock).not.toHaveBeenCalled();
       });
     });
 
     describe("given access token is expired and valid refresh token is provided", () => {
       it("should return a 200 and a new access token", async () => {
+        const findSessionMock = jest
+          .spyOn(prisma.session, "findUnique")
+          .mockResolvedValueOnce(sessionPayload);
+
         const findUserServiceMock = jest
           .spyOn(UserService, "findUser")
-          .mockResolvedValueOnce(userDocument)
-          .mockResolvedValueOnce(userDocument);
-
-        const findSessionByIdMock = jest
-          .spyOn(SessionModel, "findById")
-          .mockResolvedValueOnce(sessionDocument.toJSON());
+          .mockResolvedValueOnce(userPayload);
 
         const signJwtMock = jest
           .spyOn(JwtUtils, "signJwt")
           .mockReturnValueOnce(jwt);
+
+        const findUserWithAllFollowsServiceMock = jest
+          .spyOn(UserService, "findUserWithAllFollows")
+          .mockResolvedValueOnce(userWithAllFollows);
 
         const { statusCode, headers } = await supertest(app)
           .get("/authcheck")
@@ -138,13 +134,18 @@ describe("session", () => {
 
         expect(statusCode).toBe(200);
         expect(headers["x-access-token"]).toEqual(expect.any(String));
-        expect(findUserServiceMock).toHaveBeenCalledTimes(2);
-        expect(findSessionByIdMock).toHaveBeenCalledWith(sessionDocument.id);
+        expect(findUserServiceMock).toHaveBeenCalledWith({
+          where: { id: userId },
+        });
+        expect(findSessionMock).toHaveBeenCalledWith({
+          where: { id: sessionPayload.id },
+        });
         expect(signJwtMock).toHaveBeenCalledWith(
-          { ...userDocument.toJSON(), session: sessionDocument._id },
+          { ...userPayload, session: sessionPayload.id },
           "accessTokenSecret",
           { expiresIn: config.get<string>("accessTokenTtl") }
         );
+        expect(findUserWithAllFollowsServiceMock).toHaveBeenCalled();
       });
     });
   });
@@ -154,12 +155,11 @@ describe("session", () => {
       it("should return a 400 with error message", async () => {
         const validatePasswordServiceMock = jest
           .spyOn(UserService, "validatePassword")
-          // @ts-ignore
-          .mockResolvedValueOnce(userDocument.toJSON());
+          .mockResolvedValueOnce(userPayload);
 
         const createSessionServiceMock = jest
           .spyOn(SessionService, "createSession")
-          .mockResolvedValueOnce(sessionDocument.toJSON());
+          .mockResolvedValueOnce(sessionPayload);
 
         const { statusCode, body } = await supertest(app)
           .post("/api/v2/sessions")
@@ -177,12 +177,11 @@ describe("session", () => {
       it("should return a 401 with error message", async () => {
         const validatePasswordServiceMock = jest
           .spyOn(UserService, "validatePassword")
-          // @ts-ignore
           .mockResolvedValueOnce(false);
 
         const createSessionServiceMock = jest
           .spyOn(SessionService, "createSession")
-          .mockResolvedValueOnce(sessionDocument.toJSON());
+          .mockResolvedValueOnce(sessionPayload);
 
         const { statusCode } = await supertest(app)
           .post("/api/v2/sessions")
@@ -202,11 +201,11 @@ describe("session", () => {
         jest
           .spyOn(UserService, "validatePassword")
           // @ts-ignore
-          .mockResolvedValueOnce(userDocument.toJSON());
+          .mockResolvedValueOnce(userPayload);
 
         jest
           .spyOn(SessionService, "createSession")
-          .mockResolvedValueOnce(sessionDocument.toJSON());
+          .mockResolvedValueOnce(sessionPayload);
 
         const req = {
           get: () => {
@@ -246,13 +245,13 @@ describe("session", () => {
 
     describe("given the request is good", () => {
       it("should return a 200 and the array of user sessions", async () => {
-        const findUserServiceMock = jest
-          .spyOn(UserService, "findUser")
-          .mockResolvedValueOnce(userDocument);
+        const findUserWithAllFollowsServiceMock = jest
+          .spyOn(UserService, "findUserWithAllFollows")
+          .mockResolvedValueOnce(userWithAllFollows);
 
         const findSessionsServiceMock = jest
           .spyOn(SessionService, "findSessions")
-          .mockResolvedValueOnce([sessionDocument.toJSON()]);
+          .mockResolvedValueOnce([sessionPayload]);
 
         const { body, statusCode } = await supertest(app)
           .get("/api/v2/sessions")
@@ -260,14 +259,11 @@ describe("session", () => {
 
         expect(statusCode).toBe(200);
         expect(body).toEqual({
-          data: [
-            {
-              ...sessionPayload,
-              _id: sessionPayload._id.toString(),
-            },
-          ],
+          data: [sessionResponse],
         });
-        expect(findUserServiceMock).toHaveBeenCalledWith({ _id: userId });
+        expect(findUserWithAllFollowsServiceMock).toHaveBeenCalledWith({
+          id: userId,
+        });
         expect(findSessionsServiceMock).toHaveBeenCalled();
       });
     });
@@ -284,13 +280,13 @@ describe("session", () => {
 
     describe("given the request is good", () => {
       it("should return a 200 and null tokens", async () => {
-        const findUserServiceMock = jest
-          .spyOn(UserService, "findUser")
-          .mockResolvedValueOnce(userDocument);
+        const findUserWithAllFollowsServiceMock = jest
+          .spyOn(UserService, "findUserWithAllFollows")
+          .mockResolvedValueOnce(userWithAllFollows);
 
         const updateSessionServiceMock = jest
           .spyOn(SessionService, "findAndUpdateSession")
-          .mockResolvedValueOnce(updatedSessionDocument);
+          .mockResolvedValueOnce({ ...sessionPayload, valid: false });
 
         const { body, statusCode } = await supertest(app)
           .delete("/api/v2/sessions")
@@ -299,13 +295,15 @@ describe("session", () => {
         expect(statusCode).toBe(200);
         expect(body).toEqual({
           session: {
-            ...sessionDocument.toJSON({ flattenObjectIds: true }),
+            ...sessionResponse,
             valid: false,
           },
           accessToken: null,
           refreshToken: null,
         });
-        expect(findUserServiceMock).toHaveBeenCalledWith({ _id: userId });
+        expect(findUserWithAllFollowsServiceMock).toHaveBeenCalledWith({
+          id: userId,
+        });
         expect(updateSessionServiceMock).toHaveBeenCalled();
       });
     });
