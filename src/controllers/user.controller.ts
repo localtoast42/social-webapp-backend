@@ -119,16 +119,6 @@ export async function getUserListHandler(
   }
 
   const query: Prisma.UserFindManyArgs = {
-    select: {
-      id: true,
-      username: true,
-      firstName: true,
-      lastName: true,
-      city: true,
-      state: true,
-      country: true,
-      imageUrl: true,
-    },
     where: {
       AND: [{ id: { not: user.id } }, { isGuest: false }, ...queryTerms],
     },
