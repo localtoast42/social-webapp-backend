@@ -9,7 +9,7 @@
     "start": "NODE_CONFIG_DIR=./build/config node build/src/app.js",
     "dev": "tsx watch ./src/app.ts",
     "test": "jest",
-    "build": "npm run build:ts && npm run build:post",
+    "build": "npx prisma generate && npm run build:ts && npm run build:post",
     "build:ts": "tsc",
     "build:post": "npm run build:post:replace",
     "build:post:replace": "replace \"exports\\.default\" \"module.exports\" ./build/config/*.js"
