@@ -88,7 +88,14 @@ export async function getChildPostsHandler(
 
   const posts = await findManyPostsWithAuthorAndLikes(query);
 
-  return res.json({ data: posts });
+  const postsData = posts.map((post) => {
+    return {
+      ...post,
+      likes: post.likes.map((obj) => obj.id),
+    };
+  });
+
+  return res.json({ data: postsData });
 }
 
 export async function getRecentPostsHandler(
