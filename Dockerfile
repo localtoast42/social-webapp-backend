@@ -41,6 +41,9 @@ RUN npm ci --only=production
 # Copy built application
 COPY --from=build /app/build /app/build
 
+# Copy generated Prisma client
+COPY --from=build /app/node_modules/.prisma /app/node_modules/.prisma
+
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
 CMD [ "npm", "run", "start" ]
