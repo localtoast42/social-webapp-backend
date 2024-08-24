@@ -65,9 +65,16 @@ export async function createRandomUserAndPosts(postCount: number) {
   const posts = [];
 
   for (let i = 0; i < postCount; i++) {
+    let postDate = faker.date.between({
+      from: "2024-06-01T00:00:00.000Z",
+      to: Date.now(),
+    });
+
     posts.push({
       text: faker.lorem.paragraph({ min: 1, max: 4 }),
       isPublic: true,
+      createdAt: postDate,
+      updatedAt: postDate,
     });
   }
 
