@@ -34,6 +34,10 @@ RUN npm run build
 # Final stage for app image
 FROM base
 
+# Install packages needed for deployment
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y openssl
+
 COPY package-lock.json package.json ./
 
 RUN npm ci --only=production
