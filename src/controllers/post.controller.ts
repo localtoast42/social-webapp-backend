@@ -202,13 +202,20 @@ export async function getPostsByUserHandler(
     orderBy: { createdAt: "desc" },
   };
 
-  const posts = await findManyPosts(query);
+  const posts = await findManyPostsWithAuthorAndLikes(query);
 
   if (!posts) {
     return res.sendStatus(404);
   }
 
-  return res.json({ data: posts });
+  const postsData = posts.map((post) => {
+    return {
+      ...post,
+      likes: post.likes.map((obj) => obj.id),
+    };
+  });
+
+  return res.json({ data: postsData });
 }
 
 export async function updatePostHandler(
