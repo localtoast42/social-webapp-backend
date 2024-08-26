@@ -1,1874 +1,1276 @@
 {
-	"info": {
-		"_postman_id": "390eb618-69e8-4f72-b427-c9893cf3cf0d",
-		"name": "Social Project API",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "34824772"
-	},
-	"item": [
-		{
-			"name": "Session",
-			"item": [
-				{
-					"name": "Create Session",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"console.log(jsonData)\r",
-									"postman.setEnvironmentVariable(\"accessToken\", jsonData.accessToken);\r",
-									"postman.setEnvironmentVariable(\"refreshToken\", jsonData.refreshToken);"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"{{username}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{endpoint}}/api/v1/sessions",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"sessions"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Sessions",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/sessions",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"sessions"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Session",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/sessions",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"sessions"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "User",
-			"item": [
-				{
-					"name": "Create User",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"postman.setEnvironmentVariable(\"userId\", jsonData.id);"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"{{username}}\",\r\n    \"password\": \"{{password}}\",\r\n    \"passwordConfirmation\": \"{{password}}\",\r\n    \"firstName\": \"{{firstName}}\",\r\n    \"lastName\": \"{{lastName}}\",\r\n    \"city\": \"{{city}}\",\r\n    \"state\": \"{{state}}\",\r\n    \"country\": \"{{country}}\",\r\n    \"imageUrl\": \"{{imageUrl}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{endpoint}}/api/v1/users",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Guest",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"console.log(jsonData)\r",
-									"postman.setEnvironmentVariable(\"accessToken\", jsonData.accessToken);\r",
-									"postman.setEnvironmentVariable(\"refreshToken\", jsonData.refreshToken);"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/guest",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"guest"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Self",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"postman.setEnvironmentVariable(\"userId\", jsonData._id);\r",
-									"\r",
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/users/self",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"self"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get User List",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"\r",
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/users",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get User List with Query",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"postman.setEnvironmentVariable(\"userId\", jsonData[0]._id);\r",
-									"\r",
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/users?q=te",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users"
-							],
-							"query": [
-								{
-									"key": "q",
-									"value": "te"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get User",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"\r",
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/users/{{userId}}",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"{{userId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Posts By User",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"\r",
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/users/{{userId}}/posts",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"{{userId}}",
-								"posts"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get User Follows",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"\r",
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/users/{{userId}}/following",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"{{userId}}",
-								"following"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Follow User",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"\r",
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/users/{{userId}}/follow",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"{{userId}}",
-								"follow"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Unfollow User",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"\r",
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/users/{{userId}}/follow",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"{{userId}}",
-								"follow"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update User",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"\r",
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{endpoint}}/api/v1/users/{{userId}}",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"{{userId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete User",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"\r",
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/users/{{userId}}",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"{{userId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Populate Users",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"\r",
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/users/populate",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"populate"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Post",
-			"item": [
-				{
-					"name": "Create Post",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"postman.setEnvironmentVariable(\"postId\", jsonData.id);\r",
-									"\r",
-									"\r",
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"text\": \"test post\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{endpoint}}/api/v1/posts",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"posts"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Post",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/posts/{{postId}}",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"posts",
-								"{{postId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Recent Posts",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/posts?limit=10",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"posts"
-							],
-							"query": [
-								{
-									"key": "limit",
-									"value": "10"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Followed Posts",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/posts/following",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"posts",
-								"following"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Post",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"text\": \"test post (updated)\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{endpoint}}/api/v1/posts/{{postId}}",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"posts",
-								"{{postId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Like Post",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"like\": \"true\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{endpoint}}/api/v1/posts/{{postId}}/like",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"posts",
-								"{{postId}}",
-								"like"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Unlike Post",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"like\": \"false\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{endpoint}}/api/v1/posts/{{postId}}/like",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"posts",
-								"{{postId}}",
-								"like"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Post",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/posts/{{postId}}",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"posts",
-								"{{postId}}"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Comment",
-			"item": [
-				{
-					"name": "Create Comment",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"postman.setEnvironmentVariable(\"commentId\", jsonData.id);\r",
-									"\r",
-									"\r",
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"text\": \"test comment\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{endpoint}}/api/v1/posts/{{postId}}/comments",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"posts",
-								"{{postId}}",
-								"comments"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Comments By Post",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/posts/{{postId}}/comments",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"posts",
-								"{{postId}}",
-								"comments"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Comment",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/posts/{{postId}}/comments/{{commentId}}",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"posts",
-								"{{postId}}",
-								"comments",
-								"{{commentId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Comment",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"text\": \"test comment (updated)\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{endpoint}}/api/v1/posts/{{postId}}/comments/{{commentId}}",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"posts",
-								"{{postId}}",
-								"comments",
-								"{{commentId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Like Comment",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"like\": \"true\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{endpoint}}/api/v1/posts/{{postId}}/comments/{{commentId}}/like",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"posts",
-								"{{postId}}",
-								"comments",
-								"{{commentId}}",
-								"like"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Unlike Comment",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"like\": \"false\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{endpoint}}/api/v1/posts/{{postId}}/comments/{{commentId}}/like",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"posts",
-								"{{postId}}",
-								"comments",
-								"{{commentId}}",
-								"like"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Comment",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const newAccessToken = responseHeaders['x-access-token']\r",
-									"\r",
-									"if(newAccessToken){\r",
-									"    console.log('Set new access token')\r",
-									"postman.setEnvironmentVariable(\"accessToken\", newAccessToken);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{accessToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "x-refresh",
-								"value": "{{refreshToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{endpoint}}/api/v1/posts/{{postId}}/comments/{{commentId}}",
-							"host": [
-								"{{endpoint}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"posts",
-								"{{postId}}",
-								"comments",
-								"{{commentId}}"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		}
-	],
-	"auth": {
-		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "{{accessToken}}",
-				"type": "string"
-			}
-		]
-	},
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"packages": {},
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"packages": {},
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"key": "endpoint",
-			"value": "http://localhost:3000",
-			"type": "string"
-		},
-		{
-			"key": "accessToken",
-			"value": "<accessToken will be set when you create a session>",
-			"type": "string"
-		},
-		{
-			"key": "postId",
-			"value": "<postId will be set when you create a session>",
-			"type": "string"
-		},
-		{
-			"key": "userId",
-			"value": "<userId will be set when you create a session>",
-			"type": "string"
-		},
-		{
-			"key": "commentId",
-			"value": "<commentId will be set when you create a session>",
-			"type": "string"
-		},
-		{
-			"key": "username",
-			"value": "testley",
-			"type": "string"
-		},
-		{
-			"key": "password",
-			"value": "testley",
-			"type": "string"
-		},
-		{
-			"key": "firstName",
-			"value": "test",
-			"type": "string"
-		},
-		{
-			"key": "lastName",
-			"value": "test",
-			"type": "string"
-		},
-		{
-			"key": "city",
-			"value": "test",
-			"type": "string"
-		},
-		{
-			"key": "state",
-			"value": "test",
-			"type": "string"
-		},
-		{
-			"key": "country",
-			"value": "test",
-			"type": "string"
-		},
-		{
-			"key": "imageUrl",
-			"value": "test",
-			"type": "string"
-		}
-	]
+  "info": {
+    "_postman_id": "1248a5eb-bb53-42d9-bae8-c09f9765e70b",
+    "name": "Social Project API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+    "_exporter_id": "34824772"
+  },
+  "item": [
+    {
+      "name": "Session",
+      "item": [
+        {
+          "name": "Create Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseJson = pm.response.json();\r",
+                  "console.log(responseJson);\r",
+                  "pm.environment.set(\"accessToken\", responseJson.accessToken);\r",
+                  "pm.environment.set(\"refreshToken\", responseJson.refreshToken);"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"{{username}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{endpoint}}/sessions"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Sessions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{endpoint}}/sessions"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}\r",
+                  "\r",
+                  "const responseJson = pm.response.json();\r",
+                  "\r",
+                  "pm.environment.set(\"accessToken\", responseJson.accessToken);\r",
+                  "pm.environment.set(\"refreshToken\", responseJson.refreshToken);"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{endpoint}}/sessions"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseJson = pm.response.json();\r",
+                  "pm.environment.set(\"userId\", responseJson.id);"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"{{username}}\",\r\n    \"password\": \"{{password}}\",\r\n    \"passwordConfirmation\": \"{{password}}\",\r\n    \"firstName\": \"{{firstName}}\",\r\n    \"lastName\": \"{{lastName}}\",\r\n    \"city\": \"{{city}}\",\r\n    \"state\": \"{{state}}\",\r\n    \"country\": \"{{country}}\",\r\n    \"imageUrl\": \"{{imageUrl}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{endpoint}}/users"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Guest",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseJson = pm.response.json();\r",
+                  "pm.environment.set(\"userId\", responseJson.id);\r",
+                  "console.log(responseJson);\r",
+                  "pm.environment.set(\"accessToken\", responseJson.accessToken);\r",
+                  "pm.environment.set(\"refreshToken\", responseJson.refreshToken);"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{endpoint}}/guest"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Self",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const data = pm.response.json();\r",
+                  "pm.environment.set(\"userId\", data.id);\r",
+                  "\r",
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token');\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{endpoint}}/users/self"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User List",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token');\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{endpoint}}/users"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User List with Query",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseJson = pm.response.json();\r",
+                  "const data = responseJson.data;\r",
+                  "pm.environment.set(\"targetUserId\", data[0].id);\r",
+                  "\r",
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token');\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{endpoint}}/users?q=je",
+              "host": ["{{endpoint}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "je"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{endpoint}}/users/{{targetUserId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Posts By User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{endpoint}}/users/{{targetUserId}}/posts"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Follows",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{endpoint}}/users/{{targetUserId}}/following"
+          },
+          "response": []
+        },
+        {
+          "name": "Follow User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"follow\": \"true\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{endpoint}}/users/{{targetUserId}}/follow"
+          },
+          "response": []
+        },
+        {
+          "name": "Unfollow User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"follow\": \"false\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{endpoint}}/users/{{targetUserId}}/follow"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"{{firstName}}\",\r\n    \"lastName\": \"{{lastName}}\",\r\n    \"city\": \"newcity\",\r\n    \"state\": \"newstate\",\r\n    \"country\": \"newcountry\",\r\n    \"imageUrl\": \"newurl\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{endpoint}}/users/{{userId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}\r",
+                  "\r",
+                  "const responseJson = pm.response.json();\r",
+                  "\r",
+                  "pm.environment.set(\"accessToken\", responseJson.accessToken);\r",
+                  "pm.environment.set(\"refreshToken\", responseJson.refreshToken);\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{endpoint}}/users/{{userId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Populate Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"userCount\": 20,\r\n    \"postCount\": 5\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{endpoint}}/users/populate"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Post",
+      "item": [
+        {
+          "name": "Create Post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseJson = pm.response.json();\r",
+                  "pm.environment.set(\"postId\", responseJson.id);\r",
+                  "\r",
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"text\": \"test post\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{endpoint}}/posts"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{endpoint}}/posts/{{postId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Recent Posts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{endpoint}}/posts?limit=10",
+              "host": ["{{endpoint}}"],
+              "path": ["posts"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Followed Posts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{endpoint}}/posts/following"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"text\": \"test post (updated)\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{endpoint}}/posts/{{postId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Like Post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"like\": \"true\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{endpoint}}/posts/{{postId}}/like"
+          },
+          "response": []
+        },
+        {
+          "name": "Unlike Post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"like\": \"false\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{endpoint}}/posts/{{postId}}/like"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{endpoint}}/posts/{{postId}}"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Comment",
+      "item": [
+        {
+          "name": "Create Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseJson = pm.response.json();\r",
+                  "pm.environment.set(\"commentId\", responseJson.id);\r",
+                  "\r",
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"text\": \"test comment\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{endpoint}}/posts/{{postId}}/comments"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Comments By Post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{endpoint}}/posts/{{postId}}/comments"
+          },
+          "response": []
+        },
+        {
+          "name": "Like Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"like\": \"true\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{endpoint}}/posts/{{commentId}}/like"
+          },
+          "response": []
+        },
+        {
+          "name": "Unlike Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const newAccessToken = pm.response.headers['x-access-token'];\r",
+                  "\r",
+                  "if (newAccessToken) {\r",
+                  "    console.log('Set new access token')\r",
+                  "    pm.environment.set(\"accessToken\", newAccessToken);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": {
+                "token": "{{accessToken}}"
+              }
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-refresh",
+                "value": "{{refreshToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"like\": \"false\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{endpoint}}/posts/{{postId}}/like"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": {
+      "token": "{{accessToken}}"
+    }
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "endpoint",
+      "value": "http://localhost:3000/api/v2",
+      "type": "string"
+    },
+    {
+      "key": "firstName",
+      "value": "test",
+      "type": "string"
+    },
+    {
+      "key": "lastName",
+      "value": "test",
+      "type": "string"
+    },
+    {
+      "key": "city",
+      "value": "test",
+      "type": "string"
+    },
+    {
+      "key": "state",
+      "value": "test",
+      "type": "string"
+    },
+    {
+      "key": "country",
+      "value": "test",
+      "type": "string"
+    },
+    {
+      "key": "imageUrl",
+      "value": "test",
+      "type": "string"
+    }
+  ]
 }
