@@ -2,7 +2,7 @@
 
 A basic social media webapp for writing and sharing text posts. Built for the final project in The Odin Project NodeJS course.
 
-The website is comprised of a frontend application built with React & Vite, which interacts via REST API with a backend application built with Express. The frontend is hosted on Netlify, backed is hosted on Fly.io.
+The website is comprised of a frontend application built with React & Vite, which interacts via REST API with a backend application built with Express. The frontend is hosted on Netlify, backend is hosted on Fly.io.
 
 **Link to project demo:** https://epeaco-microblog.netlify.app
 
