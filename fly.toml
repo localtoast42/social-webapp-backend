@@ -18,7 +18,7 @@ primary_region = 'iad'
 
 [metrics]
   port = 9100
-  path = "/metrics" # default for most prometheus exporters
+  path = "/metrics"
 
 [[vm]]
   memory = '1gb'
