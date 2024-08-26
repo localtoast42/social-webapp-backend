@@ -1,11 +1,21 @@
 import { Prisma } from "@prisma/client";
 import prisma from "../utils/client";
 import logger from "../utils/logger";
+import { databaseResponseTimeHistogram } from "../utils/metrics";
 
 export async function createPost(input: Prisma.PostCreateInput) {
+  const metricsLabels = {
+    operation: "createPost",
+  };
+
+  const timer = databaseResponseTimeHistogram.startTimer();
+
   try {
-    return prisma.post.create({ data: input });
+    const result = await prisma.post.create({ data: input });
+    timer({ ...metricsLabels, success: "true" });
+    return result;
   } catch (e: any) {
+    timer({ ...metricsLabels, success: "false" });
     logger.error(e);
     throw new Error(e);
   }
@@ -71,8 +81,14 @@ export async function findManyPosts(query: Prisma.PostFindManyArgs) {
 export async function findManyPostsWithAuthorAndLikes(
   query: Prisma.PostFindManyArgs
 ) {
+  const metricsLabels = {
+    operation: "findManyPostsWithAuthorAndLikes",
+  };
+
+  const timer = databaseResponseTimeHistogram.startTimer();
+
   try {
-    return prisma.post.findMany({
+    const result = await prisma.post.findMany({
       ...query,
       include: {
         author: {
@@ -99,7 +115,10 @@ export async function findManyPostsWithAuthorAndLikes(
         },
       },
     });
+    timer({ ...metricsLabels, success: "true" });
+    return result;
   } catch (e: any) {
+    timer({ ...metricsLabels, success: "false" });
     logger.error(e);
     throw new Error(e);
   }

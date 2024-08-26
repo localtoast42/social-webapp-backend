@@ -5,8 +5,15 @@ import { Prisma } from "@prisma/client";
 import prisma from "../utils/client";
 import logger from "../utils/logger";
 import { CreateUserInput } from "../schemas/user.schema";
+import { databaseResponseTimeHistogram } from "../utils/metrics";
 
 export async function createUser(input: CreateUserInput) {
+  const metricsLabels = {
+    operation: "createUser",
+  };
+
+  const timer = databaseResponseTimeHistogram.startTimer();
+
   try {
     const hashedPassword = bcrypt.hashSync(
       input.password,
@@ -18,10 +25,15 @@ export async function createUser(input: CreateUserInput) {
       hashedPassword,
     };
 
-    return prisma.user.create({
+    const result = await prisma.user.create({
       data: user,
     });
+
+    timer({ ...metricsLabels, success: "true" });
+
+    return result;
   } catch (e: any) {
+    timer({ ...metricsLabels, success: "false" });
     throw e;
   }
 }
@@ -141,8 +153,14 @@ export async function findUserWithAllFollows(
   where: Prisma.UserFindUniqueArgs["where"],
   omit?: Prisma.UserFindUniqueArgs["omit"]
 ) {
+  const metricsLabels = {
+    operation: "findUserWithAllFollows",
+  };
+
+  const timer = databaseResponseTimeHistogram.startTimer();
+
   try {
-    return prisma.user.findUnique({
+    const result = await prisma.user.findUnique({
       where: where,
       omit: omit,
       include: {
@@ -158,7 +176,10 @@ export async function findUserWithAllFollows(
         },
       },
     });
+    timer({ ...metricsLabels, success: "true" });
+    return result;
   } catch (e: any) {
+    timer({ ...metricsLabels, success: "false" });
     logger.error(e);
     throw new Error(e);
   }
