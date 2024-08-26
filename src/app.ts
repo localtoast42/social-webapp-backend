@@ -3,6 +3,7 @@ import config from "config";
 import createServer from "./utils/server";
 import logger from "./utils/logger";
 import prisma from "./utils/client";
+import { startMetricsServer } from "./utils/metrics";
 
 const app = createServer();
 
@@ -18,6 +19,8 @@ app.listen(port, async () => {
     logger.error("Failed to connect to DB");
     process.exit(1);
   }
+
+  startMetricsServer();
 });
 
 export default app;
