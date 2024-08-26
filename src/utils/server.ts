@@ -1,10 +1,12 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import config from "config";
 import morgan from "morgan";
 import cors from "cors";
 import compression from "compression";
+import responseTime from "response-time";
 import routes from "../routes";
 import deserializeUser from "../middleware/deserializeUser";
+import { restResponseTimeHistogram } from "./metrics";
 
 function createServer() {
   const app = express();
@@ -23,6 +25,21 @@ function createServer() {
   if (config.get<boolean>("logRequests")) {
     app.use(morgan(config.get<string>("logFormat")));
   }
+
+  app.use(
+    responseTime((req: Request, res: Response, time: number) => {
+      if (req?.route?.path) {
+        restResponseTimeHistogram.observe(
+          {
+            method: req.method,
+            route: req.route.path,
+            status_code: res.statusCode,
+          },
+          time * 1000
+        );
+      }
+    })
+  );
 
   app.use(deserializeUser);
 
