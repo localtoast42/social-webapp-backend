@@ -200,6 +200,8 @@ export async function getPostsByUserHandler(
       ],
     },
     orderBy: { createdAt: "desc" },
+    take: req.query.limit ? parseInt(req.query.limit as string) : undefined,
+    skip: req.query.skip ? parseInt(req.query.skip as string) : undefined,
   };
 
   const posts = await findManyPostsWithAuthorAndLikes(query);
