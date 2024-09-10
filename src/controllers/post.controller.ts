@@ -12,7 +12,6 @@ import {
   createPost,
   findPost,
   findAndUpdatePost,
-  findManyPosts,
   deletePost,
   updatePostWithLikes,
   findManyPostsWithAuthorAndLikes,
