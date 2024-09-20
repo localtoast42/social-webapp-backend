@@ -16,21 +16,11 @@ export async function createSession(input: Prisma.SessionCreateInput) {
 }
 
 export async function findSessions(query: Prisma.SessionFindManyArgs) {
-  try {
-    return prisma.session.findMany(query);
-  } catch (e: any) {
-    logger.error(e);
-    throw new Error(e);
-  }
+  return prisma.session.findMany(query);
 }
 
 export async function findAndUpdateSession(query: Prisma.SessionUpdateArgs) {
-  try {
-    return prisma.session.update(query);
-  } catch (e: any) {
-    logger.error(e);
-    throw new Error(e);
-  }
+  return prisma.session.update(query);
 }
 
 export async function reIssueAccessToken({

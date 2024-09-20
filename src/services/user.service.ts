@@ -3,7 +3,6 @@ import bcrypt from "bcrypt";
 import { omit } from "lodash";
 import { Prisma } from "@prisma/client";
 import prisma from "../utils/client";
-import logger from "../utils/logger";
 import { CreateUserInput } from "../schemas/user.schema";
 import { databaseResponseTimeHistogram } from "../utils/metrics";
 
@@ -42,29 +41,24 @@ export async function createUserAndPosts(
   userInput: CreateUserInput,
   postInput: Prisma.PostCreateWithoutAuthorInput[]
 ) {
-  try {
-    const hashedPassword = bcrypt.hashSync(
-      userInput.password,
-      config.get<number>("saltWorkFactor")
-    );
+  const hashedPassword = bcrypt.hashSync(
+    userInput.password,
+    config.get<number>("saltWorkFactor")
+  );
 
-    const user = {
-      ...omit(userInput, "password"),
-      hashedPassword,
-    };
+  const user = {
+    ...omit(userInput, "password"),
+    hashedPassword,
+  };
 
-    return prisma.user.create({
-      data: {
-        ...user,
-        posts: {
-          create: postInput,
-        },
+  return prisma.user.create({
+    data: {
+      ...user,
+      posts: {
+        create: postInput,
       },
-    });
-  } catch (e: any) {
-    logger.error(e);
-    throw new Error(e);
-  }
+    },
+  });
 }
 
 export async function validatePassword({
@@ -97,56 +91,41 @@ export async function validatePassword({
 }
 
 export async function findUser(query: Prisma.UserFindUniqueArgs) {
-  try {
-    return prisma.user.findUnique(query);
-  } catch (e: any) {
-    logger.error(e);
-    throw new Error(e);
-  }
+  return prisma.user.findUnique(query);
 }
 
 export async function findUserWithFollowing(
   where: Prisma.UserFindUniqueArgs["where"],
   omit?: Prisma.UserFindUniqueArgs["omit"]
 ) {
-  try {
-    return prisma.user.findUnique({
-      where: where,
-      omit: omit,
-      include: {
-        following: {
-          select: {
-            id: true,
-          },
+  return prisma.user.findUnique({
+    where: where,
+    omit: omit,
+    include: {
+      following: {
+        select: {
+          id: true,
         },
       },
-    });
-  } catch (e: any) {
-    logger.error(e);
-    throw new Error(e);
-  }
+    },
+  });
 }
 
 export async function findUserWithFollowedBy(
   where: Prisma.UserFindUniqueArgs["where"],
   omit?: Prisma.UserFindUniqueArgs["omit"]
 ) {
-  try {
-    return prisma.user.findUnique({
-      where: where,
-      omit: omit,
-      include: {
-        followedBy: {
-          select: {
-            id: true,
-          },
+  return prisma.user.findUnique({
+    where: where,
+    omit: omit,
+    include: {
+      followedBy: {
+        select: {
+          id: true,
         },
       },
-    });
-  } catch (e: any) {
-    logger.error(e);
-    throw new Error(e);
-  }
+    },
+  });
 }
 
 export async function findUserWithAllFollows(
@@ -180,48 +159,32 @@ export async function findUserWithAllFollows(
     return result;
   } catch (e: any) {
     timer({ ...metricsLabels, success: "false" });
-    logger.error(e);
     throw new Error(e);
   }
 }
 
 export async function findManyUsers(query: Prisma.UserFindManyArgs) {
-  try {
-    return prisma.user.findMany(query);
-  } catch (e: any) {
-    logger.error(e);
-    throw new Error(e);
-  }
+  return prisma.user.findMany(query);
 }
 
 export async function findAndUpdateUser(query: Prisma.UserUpdateArgs) {
-  try {
-    return prisma.user.update(query);
-  } catch (e: any) {
-    logger.error(e);
-    throw new Error(e);
-  }
+  return prisma.user.update(query);
 }
 
 export async function deleteUser(userId: string) {
-  try {
-    const deleteSessions = prisma.session.deleteMany({
-      where: { userId: userId },
-    });
+  const deleteSessions = prisma.session.deleteMany({
+    where: { userId: userId },
+  });
 
-    const deletePosts = prisma.post.deleteMany({
-      where: { authorId: userId },
-    });
+  const deletePosts = prisma.post.deleteMany({
+    where: { authorId: userId },
+  });
 
-    const deleteUser = prisma.user.delete({
-      where: { id: userId },
-    });
+  const deleteUser = prisma.user.delete({
+    where: { id: userId },
+  });
 
-    return prisma.$transaction([deleteSessions, deletePosts, deleteUser]);
-  } catch (e: any) {
-    logger.error(e);
-    throw new Error(e);
-  }
+  return prisma.$transaction([deleteSessions, deletePosts, deleteUser]);
 }
 
 type ThenArg<T> = T extends PromiseLike<infer U> ? U : T;

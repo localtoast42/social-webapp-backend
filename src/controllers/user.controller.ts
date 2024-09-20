@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import config from "config";
 import { omit } from "lodash";
 import { Prisma } from "@prisma/client";
@@ -24,16 +24,18 @@ import { createRandomUserAndPosts } from "../utils/populateDatabase";
 
 export async function createUserHandler(
   req: Request<{}, {}, CreateUserRequest["body"]>,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) {
-  const userInput = {
-    ...omit(req.body, "passwordConfirmation"),
-    isGuest: !config.get<boolean>("allowNewPublicUsers"),
-  };
-
   try {
+    const userInput = {
+      ...omit(req.body, "passwordConfirmation"),
+      isGuest: !config.get<boolean>("allowNewPublicUsers"),
+    };
+
     const user = await createUser(userInput);
     logger.info(`User ${user.username} created`);
+
     return res.send(user);
   } catch (e: any) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
@@ -46,225 +48,267 @@ export async function createUserHandler(
         });
       }
     }
-    logger.error(e);
-    return res.sendStatus(500);
+    next(e);
   }
 }
 
 export async function getUserHandler(
   req: Request<ReadUserRequest["params"]>,
-  res: Response<{}, { user: UserWithAllFollows }>
+  res: Response<{}, { user: UserWithAllFollows }>,
+  next: NextFunction
 ) {
-  const requestingUser = res.locals.user;
-  const userId = req.params.userId;
+  try {
+    const requestingUser = res.locals.user;
+    const userId = req.params.userId;
 
-  const user = await findUser({
-    where: { id: userId },
-  });
+    const user = await findUser({
+      where: { id: userId },
+    });
 
-  if (!user) {
-    return res.sendStatus(404);
+    if (!user) {
+      return res.sendStatus(404);
+    }
+
+    const userData = {
+      ...user,
+      followedByMe: requestingUser?.following.some((obj) => obj.id === user.id),
+    };
+
+    return res.json(userData);
+  } catch (e: any) {
+    next(e);
   }
-
-  const userData = {
-    ...user,
-    followedByMe: requestingUser?.following.some((obj) => obj.id === user.id),
-  };
-
-  return res.json(userData);
 }
 
-export async function getSelfHandler(req: Request, res: Response) {
-  const user: UserWithAllFollows = res.locals.user;
+export async function getSelfHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const user: UserWithAllFollows = res.locals.user;
 
-  const userData = {
-    ...user,
-    following: user?.following.map((obj) => obj.id),
-    followedBy: user?.followedBy.map((obj) => obj.id),
-  };
+    const userData = {
+      ...user,
+      following: user?.following.map((obj) => obj.id),
+      followedBy: user?.followedBy.map((obj) => obj.id),
+    };
 
-  return res.json(userData);
+    return res.json(userData);
+  } catch (e: any) {
+    next(e);
+  }
 }
 
 export async function getUserListHandler(
   req: Request,
-  res: Response<{}, { user: UserWithAllFollows }>
+  res: Response<{}, { user: UserWithAllFollows }>,
+  next: NextFunction
 ) {
-  const user = res.locals.user;
+  try {
+    const user = res.locals.user;
 
-  if (!user) {
-    return res.sendStatus(403);
-  }
+    if (!user) {
+      return res.sendStatus(403);
+    }
 
-  const queryTerms: object[] = [];
+    const queryTerms: object[] = [];
 
-  if (req.query.q) {
-    const queryString = req.query.q as string;
-    queryTerms.push({
-      OR: [
-        {
-          firstName: {
-            contains: queryString,
-            mode: "insensitive",
+    if (req.query.q) {
+      const queryString = req.query.q as string;
+      queryTerms.push({
+        OR: [
+          {
+            firstName: {
+              contains: queryString,
+              mode: "insensitive",
+            },
           },
-        },
-        {
-          lastName: {
-            contains: queryString,
-            mode: "insensitive",
+          {
+            lastName: {
+              contains: queryString,
+              mode: "insensitive",
+            },
           },
-        },
-      ],
-    });
+        ],
+      });
+    }
+
+    const query: Prisma.UserFindManyArgs = {
+      where: {
+        AND: [{ id: { not: user.id } }, { isGuest: false }, ...queryTerms],
+      },
+      orderBy: { lastName: "asc" },
+    };
+
+    const users = await findManyUsers(query);
+
+    return res.json({ data: users });
+  } catch (e: any) {
+    next(e);
   }
-
-  const query: Prisma.UserFindManyArgs = {
-    where: {
-      AND: [{ id: { not: user.id } }, { isGuest: false }, ...queryTerms],
-    },
-    orderBy: { lastName: "asc" },
-  };
-
-  const users = await findManyUsers(query);
-
-  return res.json({ data: users });
 }
 
 export async function updateUserHandler(
   req: Request<UpdateUserRequest["params"], {}, UpdateUserRequest["body"]>,
-  res: Response<{}, { user: UserWithAllFollows }>
+  res: Response<{}, { user: UserWithAllFollows }>,
+  next: NextFunction
 ) {
-  const requestingUser = res.locals.user;
-  const userId = req.params.userId;
+  try {
+    const requestingUser = res.locals.user;
+    const userId = req.params.userId;
 
-  if (!requestingUser) {
-    return res.sendStatus(403);
+    if (!requestingUser) {
+      return res.sendStatus(403);
+    }
+
+    const user = await findUser({ where: { id: userId } });
+
+    if (!user) {
+      return res.sendStatus(404);
+    }
+
+    if (user.id !== requestingUser.id) {
+      return res.sendStatus(403);
+    }
+
+    const update = req.body;
+
+    const query: Prisma.UserUpdateArgs = {
+      where: { id: userId },
+      data: { ...update },
+    };
+
+    const updatedUser = await findAndUpdateUser(query);
+
+    return res.json(updatedUser);
+  } catch (e: any) {
+    next(e);
   }
-
-  const user = await findUser({ where: { id: userId } });
-
-  if (!user) {
-    return res.sendStatus(404);
-  }
-
-  if (user.id !== requestingUser.id) {
-    return res.sendStatus(403);
-  }
-
-  const update = req.body;
-
-  const query: Prisma.UserUpdateArgs = {
-    where: { id: userId },
-    data: { ...update },
-  };
-
-  const updatedUser = await findAndUpdateUser(query);
-
-  return res.json(updatedUser);
 }
 
 export async function deleteUserHandler(
   req: Request<DeleteUserRequest["params"]>,
-  res: Response<{}, { user: UserWithAllFollows }>
+  res: Response<{}, { user: UserWithAllFollows }>,
+  next: NextFunction
 ) {
-  const requestingUser = res.locals.user;
-  const userId = req.params.userId;
+  try {
+    const requestingUser = res.locals.user;
+    const userId = req.params.userId;
 
-  if (!requestingUser) {
-    return res.sendStatus(403);
+    if (!requestingUser) {
+      return res.sendStatus(403);
+    }
+
+    const user = await findUser({ where: { id: userId } });
+
+    if (!user) {
+      return res.sendStatus(404);
+    }
+
+    if (user.id !== requestingUser.id) {
+      return res.sendStatus(403);
+    }
+
+    const [deletedSessions, deletedPosts, deletedUser] = await deleteUser(
+      user.id
+    );
+
+    return res.json({
+      deletedSessionCount: deletedSessions.count,
+      deletedPostsCount: deletedPosts.count,
+      deletedUser: deletedUser,
+      accessToken: null,
+      refreshToken: null,
+    });
+  } catch (e: any) {
+    next(e);
   }
-
-  const user = await findUser({ where: { id: userId } });
-
-  if (!user) {
-    return res.sendStatus(404);
-  }
-
-  if (user.id !== requestingUser.id) {
-    return res.sendStatus(403);
-  }
-
-  const [deletedSessions, deletedPosts, deletedUser] = await deleteUser(
-    user.id
-  );
-
-  return res.json({
-    deletedSessionCount: deletedSessions.count,
-    deletedPostsCount: deletedPosts.count,
-    deletedUser: deletedUser,
-    accessToken: null,
-    refreshToken: null,
-  });
 }
 
 export async function getUserFollowsHandler(
   req: Request<ReadUserRequest["params"]>,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) {
-  const userId = req.params.userId;
+  try {
+    const userId = req.params.userId;
 
-  const user = await findUserWithFollowing({ id: userId });
+    const user = await findUserWithFollowing({ id: userId });
 
-  if (user === null) {
-    return res.sendStatus(404);
+    if (user === null) {
+      return res.sendStatus(404);
+    }
+
+    const result = {
+      id: user.id,
+      data: user.following,
+    };
+
+    return res.json(result);
+  } catch (e: any) {
+    next(e);
   }
-
-  const result = {
-    id: user.id,
-    data: user.following,
-  };
-
-  return res.json(result);
 }
 
 export async function followUserHandler(
   req: Request<FollowUserRequest["params"], {}, FollowUserRequest["body"]>,
-  res: Response<{}, { user: UserWithAllFollows }>
+  res: Response<{}, { user: UserWithAllFollows }>,
+  next: NextFunction
 ) {
-  const requestingUser = res.locals.user;
-  const targetUserId = req.params.userId;
-  const follow: boolean = JSON.parse(req.body.follow);
+  try {
+    const requestingUser = res.locals.user;
+    const targetUserId = req.params.userId;
+    const follow: boolean = JSON.parse(req.body.follow);
 
-  if (!requestingUser) {
-    return res.sendStatus(403);
-  }
+    if (!requestingUser) {
+      return res.sendStatus(403);
+    }
 
-  const targetUser = await findUser({ where: { id: targetUserId } });
+    const targetUser = await findUser({ where: { id: targetUserId } });
 
-  if (!targetUser) {
-    return res.sendStatus(404);
-  }
+    if (!targetUser) {
+      return res.sendStatus(404);
+    }
 
-  const update = follow
-    ? { connect: { id: targetUserId } }
-    : { disconnect: { id: targetUserId } };
+    const update = follow
+      ? { connect: { id: targetUserId } }
+      : { disconnect: { id: targetUserId } };
 
-  const updatedUser = await findAndUpdateUser({
-    where: { id: requestingUser.id },
-    data: { following: update },
-    include: {
-      following: {
-        select: { id: true },
+    const updatedUser = await findAndUpdateUser({
+      where: { id: requestingUser.id },
+      data: { following: update },
+      include: {
+        following: {
+          select: { id: true },
+        },
       },
-    },
-  });
+    });
 
-  return res.json(updatedUser);
+    return res.json(updatedUser);
+  } catch (e: any) {
+    next(e);
+  }
 }
 
 export async function populateUsers(
   req: Request<{}, {}, PopulateUsersRequest["body"]>,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) {
-  const userCount = req.body.userCount;
-  const postCount = req.body.postCount;
+  try {
+    const userCount = req.body.userCount;
+    const postCount = req.body.postCount;
 
-  const users = [];
+    const users = [];
 
-  for (let i = 0; i < userCount; i++) {
-    let user = await createRandomUserAndPosts(postCount);
-    users.push(user);
+    for (let i = 0; i < userCount; i++) {
+      let user = await createRandomUserAndPosts(postCount);
+      users.push(user);
+    }
+
+    res.status(201).json({ data: users });
+  } catch (e: any) {
+    next(e);
   }
-
-  res.status(201).json({ data: users });
 }
